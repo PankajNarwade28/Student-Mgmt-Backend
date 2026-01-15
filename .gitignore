@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+jspm_packages/
+
+# TypeScript & Build Output
+dist/
+build/
+*.tsbuildinfo
+
+# Secrets & Environment Variables
+.env
+.env.local
+.env.test
+.env.production
+*.pem
+*.key
+
+# Testing & Quality
+coverage/
+.scannerwork/
+.eslintcache
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

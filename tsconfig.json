@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /* Essential for InversifyJS & reflect-metadata */
+    "experimentalDecorators": true, 
+    "emitDecoratorMetadata": true, 
+
+    /* File Layout */
+    "rootDir": "./src", 
+    "outDir": "./dist",
+
+    /* Environment Settings */
+    "module": "NodeNext",
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "types": ["node", "reflect-metadata"],
+
+    /* Other Outputs */
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    /* Stricter Typechecking (Required for Quality Gates) */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitAny": true, 
+
+    /* Module Resolution */
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
