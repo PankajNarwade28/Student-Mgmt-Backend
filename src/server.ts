@@ -41,44 +41,75 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // cors method
-
-
-
-// to study.
+ 
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });
 
+// app.get('/health', async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         const isDatabaseUp = await healthRepo.isDatabaseHealthy();
+//         const studentCount = await studentRepo.getTotalStudentCount();
 
-app.get('/health', async (req: Request, res: Response, next: NextFunction) => {
+//         // Scenario: Everything is perfect
+//         return res.json({
+//             status: 'UP',
+//             backend: true,
+//             database: true,
+//             totalStudents: studentCount,
+//             message: "All systems operational",
+//             timestamp: new Date().toISOString()
+//         });
+//     } catch (err: any) { 
+//         console.error("Health check error:", err.message);
+        
+//         return res.json({
+//             status: 'DEGRADED',
+//             backend: true,
+//             database: false,
+//             totalStudents: 0,
+//             message: err.message, // This passes "relation sstudents does not exist" to React
+//             timestamp: new Date().toISOString()
+//         });
+//     }
+// });
+
+
+
+app.get('/health', async (req: Request, res: Response) => {
     let isDatabaseUp = false;
-    let studentCount = 0;
+    let studentCount: number | string = 0;
+    let statusMessage = "All systems operational";
 
     try {
-        // await pool.query('SELECT 1');
-        // if(await healthRepo.isDatabaseHealthy())
-        // {isDatabaseUp = true;}
+        const dbStatus = await healthRepo.isDatabaseHealthy();
+        isDatabaseUp = dbStatus.healthy;
 
-        isDatabaseUp = await healthRepo.isDatabaseHealthy();
-        // Fetch real data to verify database content access
-        studentCount = await studentRepo.getTotalStudentCount();
-    } catch (err) {
+        if (isDatabaseUp) {
+            studentCount = await studentRepo.getTotalStudentCount();
+        } else {
+            // This captures "database 'mini-projects' does not exist"
+            statusMessage = dbStatus.error || "Database connection failed";
+            studentCount = "N/A";
+        }
+    } catch (err: any) {
         isDatabaseUp = false;
-        next(err)
-        // Log the error for debugging
+        studentCount = "ERR";
+        statusMessage = err.message; // Captures query errors like 'sstudents' typo
     }
 
-    res.json({
-        status: isDatabaseUp ? 'UP' : 'DEGRADED',
+    return res.json({
         backend: true,
         database: isDatabaseUp,
-        totalStudents: studentCount, // New field for the dashboard
+        totalStudents: studentCount,
+        message: statusMessage, // This is what shows in your bottom box
         timestamp: new Date().toISOString()
     });
 });
 
-// // 2. Centralized Error Handling Middleware 
+
+//  2. Centralized Error Handling Middleware  
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || 500;
     res.status(statusCode).json({

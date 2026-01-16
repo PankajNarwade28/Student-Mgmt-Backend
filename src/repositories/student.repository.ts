@@ -19,24 +19,19 @@ export class StudentRepository {
   /**
    * Optimized: Uses explicit return types and precise error handling.
    * Returns the total count of students or throws an error for the service layer to catch.
-   */
-  async getTotalStudentCount(): Promise<number> {
-    const queryText = 'SELECT COUNT(*) AS total FROM students';
+   */ 
+async getTotalStudentCount(): Promise<number> {
+  const queryText = 'SELECT COUNT(*) AS total FROM students'; // Typo here
 
-    try {
-      const { rows } = await pool.query<{ total: string }>(queryText);
-      
-      // result.rows[0] is guaranteed to exist for COUNT(*), 
-      // but we use nullish coalescing for extra safety.
-      const count = rows[0]?.total ?? '0';
-      
-      return parseInt(count, 10);
-    } catch (error) {
-  // 1. You log the error to the console for the developer to see
-  console.error("Database error:", error); 
-  
-  // 2. You "rethrow" the error so the server knows something went wrong
-  throw new Error("Database Error: Table not found"); 
-}
+  try {
+    const { rows } = await pool.query<{ total: string }>(queryText);
+    const count = rows[0]?.total ?? '0';
+    return parseInt(count, 10);
+  } catch (error: any) {
+    console.error("Database error:", error);
+    // DO NOT return 0 here. Throw the error so the API can catch it.
+    throw new Error(error.message || "Database Query Failed");
   }
 }
+}
+

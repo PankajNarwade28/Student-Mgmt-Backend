@@ -1,13 +1,14 @@
-import { pool } from '../config/db';
-
+import { pool } from "../config/db";
+// HealthRepository.ts
 export class HealthRepository {
-  async isDatabaseHealthy(): Promise<boolean> {
+  async isDatabaseHealthy(): Promise<{ healthy: boolean; error?: string }> {
     try {
-      // Production-style raw SQL check
-      await pool.query('SELECT 1 FROM students LIMIT 1'); 
-      return true;
-    } catch (error) {
-      return false;// check what to do here.
+      await pool.query('SELECT 1'); 
+      return { healthy: true }; 
+    } catch (error: any) {
+      console.error("Database health check error:", error);
+      // Return the specific PG error message
+      return { healthy: false, error: error.message }; 
     }
   }
 }
