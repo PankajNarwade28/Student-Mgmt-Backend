@@ -7,7 +7,7 @@ export class HealthRepository {
       await pool.query('SELECT 1 FROM students LIMIT 1'); 
       return true;
     } catch (error) {
-      return false;
+      return false;// check what to do here.
     }
   }
 }

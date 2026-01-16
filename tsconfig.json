@@ -5,7 +5,7 @@
     "emitDecoratorMetadata": true, 
 
     /* File Layout */
-    "rootDir": "./src", 
+    "rootDir": "../", 
     "outDir": "./dist",
 
     /* Environment Settings */
@@ -32,6 +32,6 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../frontend/src/models"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }

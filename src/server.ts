@@ -1,6 +1,8 @@
 import "reflect-metadata"; 
+// llows TypeScript to store and read metadata about classes and functions using Decorators used in InversifyJS and TypeORM
 import express from "express";
 import type { Request, Response, NextFunction, Application } from "express"; 
+//type means only import the definitions not the actual code or logic
 import * as dotenv from "dotenv";
 import cors from "cors";
 import { StudentRepository } from './repositories/student.repository';
@@ -14,39 +16,44 @@ dotenv.config();
 const app: Application = express(); 
 const PORT = process.env.PORT || 3000; //
 
-const pool = require('./config/db').pool;
+// const pool = require('./config/db').pool;  // To Study..
+import { pool } from './config/db';
 
 // Load environment variables from .env file
 dotenv.config();
+
+// White Listing and proxy ...
  
 // 1. Middlewares
-app.use(express.json()); // Built-in body parser for JSON 
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // Built-in body parser for JSON   
+app.use(cors()); // Enable Cross-Origin Resource Sharing  
+// cors method
 
-// 2. Centralized Error Handling Middleware 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    const statusCode = err.status || 500;
-    res.status(statusCode).json({
-        status: "error",
-        message: err.message || "Internal Server Error",    });
-});
+
+
+// to study.
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });
 
 
-app.get('/health', async (req, res) => {
+app.get('/health', async (req: Request, res: Response, next: NextFunction) => {
     let isDatabaseUp = false;
     let studentCount = 0;
 
     try {
-        await pool.query('SELECT 1');
-        isDatabaseUp = true;
+        // await pool.query('SELECT 1');
+        // if(await healthRepo.isDatabaseHealthy())
+        // {isDatabaseUp = true;}
+
+        isDatabaseUp = await healthRepo.isDatabaseHealthy();
         // Fetch real data to verify database content access
         studentCount = await studentRepo.getTotalStudentCount();
     } catch (err) {
         isDatabaseUp = false;
+        next(err)
+        // Log the error for debugging
     }
 
     res.json({
@@ -57,6 +64,15 @@ app.get('/health', async (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+// // 2. Centralized Error Handling Middleware 
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({
+        status: "error",
+        message: err.message || "Internal Server Error",    });
+});  
+
 // 4. Start Server
 app.listen(PORT, () => {
     console.log(`[server]: Server is running at http://localhost:${PORT}`);
