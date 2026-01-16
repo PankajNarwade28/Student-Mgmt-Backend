@@ -26,7 +26,20 @@ dotenv.config();
  
 // 1. Middlewares
 app.use(express.json()); // Built-in body parser for JSON   
-app.use(cors()); // Enable Cross-Origin Resource Sharing  
+
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173']; // Add other allowed origins as needed
+const corsOptions = {
+    origin: (origin: any, callback: any) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true); // Allow the request
+        } else {
+            callback(new Error('Not allowed by CORS whitelisting')); // Block it
+        }
+    }
+};
+
+app.use(cors(corsOptions));
+
 // cors method
 
 
