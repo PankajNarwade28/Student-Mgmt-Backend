@@ -17,7 +17,7 @@ const app: Application = express();
 const PORT = process.env.PORT || 3000; //
 
 // const pool = require('./config/db').pool;  // To Study..
-import { pool } from './config/db';
+// import { pool } from './config/db';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -47,72 +47,72 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });
 
-// app.get('/health', async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const isDatabaseUp = await healthRepo.isDatabaseHealthy();
-//         const studentCount = await studentRepo.getTotalStudentCount();
+ 
 
-//         // Scenario: Everything is perfect
-//         return res.json({
-//             status: 'UP',
-//             backend: true,
-//             database: true,
-//             totalStudents: studentCount,
-//             message: "All systems operational",
-//             timestamp: new Date().toISOString()
-//         });
-//     } catch (err: any) { 
-//         console.error("Health check error:", err.message);
-        
-//         return res.json({
-//             status: 'DEGRADED',
-//             backend: true,
-//             database: false,
-//             totalStudents: 0,
-//             message: err.message, // This passes "relation sstudents does not exist" to React
-//             timestamp: new Date().toISOString()
-//         });
+
+// app.get('/health', async (req: Request, res: Response) => {
+//     let isDatabaseUp = false;
+//     let studentCount: number | string = 0;
+//     let statusMessage = "All systems operational";
+
+//     try {
+//         const dbStatus = await healthRepo.isDatabaseHealthy();
+//         isDatabaseUp = dbStatus.healthy;
+
+//         if (isDatabaseUp) {
+//             studentCount = await studentRepo.getTotalStudentCount();
+//         } else {
+//             // This captures "database 'mini-projects' does not exist"
+//             statusMessage = dbStatus.error || "Database connection failed";
+//             studentCount = "N/A";
+//         }
+//     } catch (err: any) {
+//         isDatabaseUp = false;
+//         studentCount = "ERR";
+//         statusMessage = err.message; // Captures query errors like 'sstudents' typo call next(0)
 //     }
+
+//     return res.json({
+//         backend: true,
+//         database: isDatabaseUp,
+//         totalStudents: studentCount,
+//         message: statusMessage, // This is what shows in your bottom box
+//         timestamp: new Date().toISOString()
+//     });
+
+//     // Handle 
 // });
 
 
+//  2. Centralized Error Handling Middleware  
 
-app.get('/health', async (req: Request, res: Response) => {
-    let isDatabaseUp = false;
-    let studentCount: number | string = 0;
-    let statusMessage = "All systems operational";
+app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Throws if DB is unhealthy
+    await healthRepo.isDatabaseHealthy();
 
-    try {
-        const dbStatus = await healthRepo.isDatabaseHealthy();
-        isDatabaseUp = dbStatus.healthy;
+    // If DB is healthy, get student count
+    const studentCount = await studentRepo.getTotalStudentCount();
 
-        if (isDatabaseUp) {
-            studentCount = await studentRepo.getTotalStudentCount();
-        } else {
-            // This captures "database 'mini-projects' does not exist"
-            statusMessage = dbStatus.error || "Database connection failed";
-            studentCount = "N/A";
-        }
-    } catch (err: any) {
-        isDatabaseUp = false;
-        studentCount = "ERR";
-        statusMessage = err.message; // Captures query errors like 'sstudents' typo
-    }
-
-    return res.json({
-        backend: true,
-        database: isDatabaseUp,
-        totalStudents: studentCount,
-        message: statusMessage, // This is what shows in your bottom box
-        timestamp: new Date().toISOString()
+    res.json({
+      backend: true,
+      database: true,
+      totalStudents: studentCount,
+      message: "All systems operational",
+      timestamp: new Date().toISOString(),
     });
+  } catch (err) {
+    // Pass any error to centralized error middleware
+    next(err);
+  }
 });
 
-
-//  2. Centralized Error Handling Middleware  
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || 500;
     res.status(statusCode).json({
+        backend: true,
+        database: false,
+        totalStudents: "N/A",
         status: "error",
         message: err.message || "Internal Server Error",    });
 });  
