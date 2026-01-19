@@ -9,6 +9,7 @@ import { StudentRepository } from './repositories/student.repository';
 const studentRepo = new StudentRepository();
 
 import { HealthRepository } from './repositories/health.repository';
+import authRoutes from "./routes/authRoutes";
 const healthRepo = new HealthRepository();
 
 dotenv.config();
@@ -16,13 +17,13 @@ dotenv.config();
 const app: Application = express(); 
 const PORT = process.env.PORT || 3000; //
 
+
+
 // const pool = require('./config/db').pool;  // To Study..
 // import { pool } from './config/db';
 
 // Load environment variables from .env file
 dotenv.config();
-
-// White Listing and proxy ...
  
 // 1. Middlewares
 app.use(express.json()); // Built-in body parser for JSON   
@@ -38,53 +39,23 @@ const corsOptions = {
     }
 };
 
+// Basic configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Your React/Vite dev server URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(cors(corsOptions));
 
-// cors method
- 
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });
 
  
+app.use('/api/auth', authRoutes);
 
-
-// app.get('/health', async (req: Request, res: Response) => {
-//     let isDatabaseUp = false;
-//     let studentCount: number | string = 0;
-//     let statusMessage = "All systems operational";
-
-//     try {
-//         const dbStatus = await healthRepo.isDatabaseHealthy();
-//         isDatabaseUp = dbStatus.healthy;
-
-//         if (isDatabaseUp) {
-//             studentCount = await studentRepo.getTotalStudentCount();
-//         } else {
-//             // This captures "database 'mini-projects' does not exist"
-//             statusMessage = dbStatus.error || "Database connection failed";
-//             studentCount = "N/A";
-//         }
-//     } catch (err: any) {
-//         isDatabaseUp = false;
-//         studentCount = "ERR";
-//         statusMessage = err.message; // Captures query errors like 'sstudents' typo call next(0)
-//     }
-
-//     return res.json({
-//         backend: true,
-//         database: isDatabaseUp,
-//         totalStudents: studentCount,
-//         message: statusMessage, // This is what shows in your bottom box
-//         timestamp: new Date().toISOString()
-//     });
-
-//     // Handle 
-// });
-
-
-//  2. Centralized Error Handling Middleware  
 
 app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
   try {
