@@ -1,53 +1,49 @@
 import "reflect-metadata"; 
-// llows TypeScript to store and read metadata about classes and functions using Decorators used in InversifyJS and TypeORM
+import * as dotenv from "dotenv";
+import path from 'path';
+
+// 1. THIS MUST BE FIRST - Before any repositories or routes are imported
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// STEP 2: NOW IMPORT EVERYTHING ELSE
 import express from "express";
 import type { Request, Response, NextFunction, Application } from "express"; 
-//type means only import the definitions not the actual code or logic
-import * as dotenv from "dotenv";
 import cors from "cors";
 import { StudentRepository } from './repositories/student.repository';
-const studentRepo = new StudentRepository();
-
 import { HealthRepository } from './repositories/health.repository';
 import authRoutes from "./routes/authRoutes";
+
+// STEP 3: INITIALIZE REPOS AFTER ENV IS LOADED
+const studentRepo = new StudentRepository();
 const healthRepo = new HealthRepository();
 
-dotenv.config();
-
 const app: Application = express(); 
-const PORT = process.env.PORT || 3000; //
-
-
-
-// const pool = require('./config/db').pool;  // To Study..
-// import { pool } from './config/db';
-
-// Load environment variables from .env file
-dotenv.config();
+const PORT = process.env.PORT || 3000;
  
-// 1. Middlewares
-app.use(express.json()); // Built-in body parser for JSON   
 
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173']; // Add other allowed origins as needed
-const corsOptions = {
-    origin: (origin: any, callback: any) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true); // Allow the request
-        } else {
-            callback(new Error('Not allowed by CORS whitelisting')); // Block it
-        }
+// 2. Debugging: Check what is actually being loaded
+const rawOrigins = process.env.ALLOWED_ORIGINS || "";
+const allowedOrigins = rawOrigins.split(',').map(o => o.trim());
+
+console.log("[server]: Allowed Origins:", allowedOrigins);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // !origin allows tools like Postman/Insomnia
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error(`[CORS Blocked]: Origin ${origin} is not in`, allowedOrigins);
+      callback(new Error('Not allowed by CORS'));
     }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 };
 
-// Basic configuration
-app.use(cors({
-  origin: 'http://localhost:5173', // Your React/Vite dev server URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+// 3. Apply ONLY this one CORS middleware
 app.use(cors(corsOptions));
-
+app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');

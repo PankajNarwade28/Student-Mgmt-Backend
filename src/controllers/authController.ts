@@ -19,6 +19,8 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Salt? 12?
+
     // 3. Insert into PostgreSQL (using your UUID and role constraints)
     const newUser = await pool.query(
       `INSERT INTO users (email, password, role) 
