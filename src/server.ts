@@ -12,9 +12,12 @@ import { StudentRepository } from './repositories/student.repository';
 import { HealthRepository } from './repositories/health.repository';
 import authRoutes from "./routes/authRoutes";
 import { authorize } from "./middlewares/access.middleware";
+import { TYPES } from "./config/types";
+import { container } from "./config/inversify.config";
+import { HealthController } from "./controllers/healthController";
 
 // STEP 3: INITIALIZE REPOS AFTER ENV IS LOADED
-const studentRepo = new StudentRepository();
+// const studentRepo = new StudentRepository();
 const healthRepo = new HealthRepository();
 
 const app: Application = express(); 
@@ -54,26 +57,35 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 
 
-app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // Throws if DB is unhealthy
-    await healthRepo.isDatabaseHealthy();
+// app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     // 1. Resolve the repository from the Inversify container
+//     // This ensures 'pool' is automatically injected without the "argument not provided" error
+//     const studentRepo = container.get<StudentRepository>(TYPES.StudentRepository);
 
-    // If DB is healthy, get student count
-    const studentCount = await studentRepo.getTotalStudentCount();
+//     // 2. Execute the database logic
+//     const studentCount = await studentRepo.getTotalStudentCount();
 
-    res.json({
-      backend: true,
-      database: true,
-      totalStudents: studentCount,
-      message: "All systems operational",
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    // Pass any error to centralized error middleware
-    next(err);
-  }
-});
+//     // 3. Send the successful response
+//     res.json({
+//       backend: true,
+//       database: true,
+//       totalStudents: studentCount,
+//       message: "All systems operational",
+//       timestamp: new Date().toISOString(),
+//     });
+//   } catch (err) {
+//     // Pass any error to centralized error middleware
+//     next(err);
+//   }
+// });
+
+// using HealthController for /health route
+const healthController = container.get<HealthController>(TYPES.HealthController);
+app.get("/health", healthController.checkHealth);
+
+// const studentController = container.get<StudentRepository>(TYPES.StudentRepository);
+// app.get("/students/stats", studentController.getTotalStudentCount.bind(studentController));
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || 500;

@@ -1,8 +1,11 @@
 export const TYPES = {
+    DbPool: Symbol.for("DbPool"),
     UserRepository: Symbol.for('UserRepository'),
     StudentRepository: Symbol.for('StudentRepository'),
     HealthRepository: Symbol.for('HealthRepository'),
     AuthController: Symbol.for('AuthController'),
+    HealthController: Symbol.for('HealthController'),
+    
 };
 
 // export const TYPES = {

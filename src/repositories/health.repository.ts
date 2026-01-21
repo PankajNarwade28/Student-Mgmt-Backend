@@ -1,5 +1,7 @@
+import { injectable } from 'inversify';
 import { pool } from "../config/db";
 
+@injectable()
 export class HealthRepository {
   async isDatabaseHealthy(): Promise<boolean> {
     try {
