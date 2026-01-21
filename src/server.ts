@@ -86,7 +86,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // 4. Start Server
 app.listen(PORT, () => {
-    console.log(`[server]: Server is running at http://localhost:${PORT}`);
+    // console.log(`[server]: Server is running at http://localhost:${PORT}`); //use env
+    console.log(`[server]: Server is running at ${process.env.BASE_URL}:${PORT}`);
     console.log(`[server]: Mode: ${process.env.NODE_ENV || 'development'}`);
 });
 
