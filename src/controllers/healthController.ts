@@ -12,7 +12,7 @@ export class HealthController {
   checkHealth = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const studentCount = await this.studentRepo.getTotalStudentCount();
-      res.json({database: true,backend: true, totalStudents: studentCount, status: "UP" });
+      res.json({database: true,backend: true,message: "All systems operational", totalStudents: studentCount, status: "UP" });
     } catch (err) {
       next(err);
     }
