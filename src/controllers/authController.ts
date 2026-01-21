@@ -5,6 +5,7 @@ import { TYPES } from "../config/types";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
+// import { AuthBody } from "../validations/authSchema";
 
 // const userRepository = new UserRepository();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -93,7 +94,8 @@ export class AuthController {
   };
 
   signup= async (req: Request, res: Response): Promise<void> => {
-  const { email, password, role } = req.body;
+  // TypeScript now knows exactly what is in req.body thanks to Zod
+    const { email, password, role } = req.body;
 
   try {
     // 1. Check if user exists using repo

@@ -11,6 +11,7 @@ import cors from "cors";
 import { StudentRepository } from './repositories/student.repository';
 import { HealthRepository } from './repositories/health.repository';
 import authRoutes from "./routes/authRoutes";
+import { authorize } from "./middlewares/access.middleware";
 
 // STEP 3: INITIALIZE REPOS AFTER ENV IS LOADED
 const studentRepo = new StudentRepository();
@@ -77,8 +78,8 @@ app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || 500;
     res.status(statusCode).json({
-        backend: true,
-        database: false,
+        // backend: true,
+        // database: false,
         totalStudents: "N/A",
         status: "error",
         message: err.message || "Internal Server Error",    });
