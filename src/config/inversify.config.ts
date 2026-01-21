@@ -13,3 +13,6 @@ container.bind<UserRepository>(TYPES.UserRepository).to(UserRepository).inSingle
 container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingletonScope();
 
 export { container };
+
+
+// bind the classes in a central config file.
