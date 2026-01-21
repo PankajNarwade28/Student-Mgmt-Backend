@@ -1,6 +1,9 @@
 // src/repositories/user.repository.ts
+import { injectable } from 'inversify';
 import { pool } from '../config/db';
 
+
+@injectable()  //Decorator: This marks the AuthController so that the Inversify container can manage its lifecycle and dependencies
 export class UserRepository {
   // Find a user by email (active users only)
   async findByEmail(email: string) {
