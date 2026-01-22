@@ -1,3 +1,4 @@
+
 export const TYPES = {
     DbPool: Symbol.for("DbPool"),
     UserRepository: Symbol.for('UserRepository'),
@@ -5,7 +6,8 @@ export const TYPES = {
     HealthRepository: Symbol.for('HealthRepository'),
     AuthController: Symbol.for('AuthController'),
     HealthController: Symbol.for('HealthController'),
-    
+    AdminController: Symbol.for("AdminController"),
+    AdminRepository: Symbol.for("AdminRepository"),
 };
 
 // export const TYPES = {

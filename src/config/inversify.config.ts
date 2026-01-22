@@ -8,6 +8,8 @@ import { AuthController } from "../controllers/authController";
 import { pool } from "./db";
 import { Pool } from "pg";
 import { HealthController } from "../controllers/healthController";
+import { AdminController } from "../controllers/adminController";
+import { AdminRepository } from "../repositories/admin.repository";
 
 const container = new Container();
 // Bind the actual pool instance (Singleton)
@@ -21,6 +23,10 @@ container.bind<StudentRepository>(TYPES.StudentRepository).to(StudentRepository)
 // Bind the Controller
 container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingletonScope();
 container.bind<HealthController>(TYPES.HealthController).to(HealthController).inSingletonScope();
+
+// Bind Repository and Controller
+container.bind<AdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
+container.bind<AdminController>(TYPES.AdminController).to(AdminController).inSingletonScope();
 
 export { container };
 

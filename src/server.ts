@@ -15,6 +15,8 @@ import { authorize } from "./middlewares/access.middleware";
 import { TYPES } from "./config/types";
 import { container } from "./config/inversify.config";
 import { HealthController } from "./controllers/healthController";
+import { authMiddleware } from "./middlewares/auth.middleware";
+import { AdminController } from "./controllers/adminController";
 
 // STEP 3: INITIALIZE REPOS AFTER ENV IS LOADED
 // const studentRepo = new StudentRepository();
@@ -28,8 +30,7 @@ const PORT = process.env.PORT || 3000;
 const rawOrigins = process.env.ALLOWED_ORIGINS || "";
 const allowedOrigins = rawOrigins.split(',').map(o => o.trim());
 
-console.log("[server]: Allowed Origins:", allowedOrigins);
-
+console.log("[server]: Allowed Origins:", allowedOrigins); 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // !origin allows tools like Postman/Insomnia
@@ -55,37 +56,14 @@ app.get('/', (req: Request, res: Response) => {
 
  
 app.use('/api/auth', authRoutes);
+const adminRoutes = require('./routes/adminRoutes').default;
+app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
 
-
-// app.get("/health", async (req: Request, res: Response, next: NextFunction) => {
-//   try {
-//     // 1. Resolve the repository from the Inversify container
-//     // This ensures 'pool' is automatically injected without the "argument not provided" error
-//     const studentRepo = container.get<StudentRepository>(TYPES.StudentRepository);
-
-//     // 2. Execute the database logic
-//     const studentCount = await studentRepo.getTotalStudentCount();
-
-//     // 3. Send the successful response
-//     res.json({
-//       backend: true,
-//       database: true,
-//       totalStudents: studentCount,
-//       message: "All systems operational",
-//       timestamp: new Date().toISOString(),
-//     });
-//   } catch (err) {
-//     // Pass any error to centralized error middleware
-//     next(err);
-//   }
-// });
 
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
 app.get("/health", healthController.checkHealth);
 
-// const studentController = container.get<StudentRepository>(TYPES.StudentRepository);
-// app.get("/students/stats", studentController.getTotalStudentCount.bind(studentController));
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const statusCode = err.status || 500;
@@ -96,6 +74,13 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         status: "error",
         message: err.message || "Internal Server Error",    });
 });  
+
+// 2. 404 Redirect Middleware
+app.use((req, res) => {
+    // Redirects any unmatched request to the root path
+    res.send('Route not found. Please check the URL or refer to the API documentation.'); 
+});
+
 
 // 4. Start Server
 app.listen(PORT, () => {
