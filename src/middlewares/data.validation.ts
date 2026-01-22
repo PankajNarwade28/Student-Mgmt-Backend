@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-// Middleware for Signup Validation
+// Middleware for data validation when an admin adds a new user
 
 export const validateAdminAddUser = (req: Request, res: Response, next: NextFunction) => {
   const { email, role } = req.body;
