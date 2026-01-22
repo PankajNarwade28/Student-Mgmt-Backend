@@ -11,8 +11,4 @@ export const TYPES = {
     ProfileRepository: Symbol.for("ProfileRepository"),
     ProfileController: Symbol.for("ProfileController"),
 };
-
-// export const TYPES = {
-//     UserRepository: Symbol.for("UserRepository"),
-//     AuthController: Symbol.for("AuthController"),
-// };
+export type TYPES = typeof TYPES;

@@ -56,11 +56,15 @@ app.get('/', (req: Request, res: Response) => {
 
 
 app.use('/api/auth', authRoutes);
+
+// Admin Routes with auth and authorization middleware
 const adminRoutes = require('./routes/adminRoutes').default;
 app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
 
+// User Routes with auth middleware
 const userRoutes = require('./routes/userRoutes').default;
 app.use('/api/user', authMiddleware, userRoutes );
+
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
 app.get("/health", healthController.checkHealth);
