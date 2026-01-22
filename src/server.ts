@@ -54,12 +54,13 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });
 
- 
+
 app.use('/api/auth', authRoutes);
 const adminRoutes = require('./routes/adminRoutes').default;
 app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
 
-
+const userRoutes = require('./routes/userRoutes').default;
+app.use('/api/user', authMiddleware, userRoutes );
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
 app.get("/health", healthController.checkHealth);
