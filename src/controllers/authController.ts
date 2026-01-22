@@ -5,6 +5,8 @@ import { TYPES } from "../config/types";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
+import { ProfileRepository } from "../repositories/profile.repository";
+
  
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -14,7 +16,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 @injectable() 
 export class AuthController {
-  constructor(@inject(TYPES.UserRepository) private userRepo: UserRepository) {}
+  constructor(
+    @inject(TYPES.UserRepository) private userRepo: UserRepository,
+    @inject(TYPES.ProfileRepository) private profileRepo: ProfileRepository
+  ) {}
   login = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
@@ -35,10 +40,11 @@ export class AuthController {
         JWT_SECRET as string,
         { expiresIn: "24h" },
       );
-
+      const profile = await this.profileRepo.getProfileByUserId(user.id);
       res.json({
         token,
         user: { id: user.id, email: user.email, role: user.role },
+        profileCompleted: !!profile // true if profile exists, false otherwise
       });
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
