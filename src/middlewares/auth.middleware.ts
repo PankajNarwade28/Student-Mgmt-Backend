@@ -84,7 +84,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
     // 3. Attach decoded user to request object
     // This allows the next middleware (authorize) to access req.user
-    (req as any).user = decoded;
+    (req as any).user = decoded;  
+    
 
     next();
   } catch (error) {

@@ -8,6 +8,8 @@ export const TYPES = {
     HealthController: Symbol.for('HealthController'),
     AdminController: Symbol.for("AdminController"),
     AdminRepository: Symbol.for("AdminRepository"),
+    ProfileRepository: Symbol.for("ProfileRepository"),
+    ProfileController: Symbol.for("ProfileController"),
 };
 
 // export const TYPES = {

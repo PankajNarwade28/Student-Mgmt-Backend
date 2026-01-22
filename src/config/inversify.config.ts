@@ -10,6 +10,7 @@ import { Pool } from "pg";
 import { HealthController } from "../controllers/healthController";
 import { AdminController } from "../controllers/adminController";
 import { AdminRepository } from "../repositories/admin.repository";
+import { ProfileRepository } from "../repositories/profile.repository";
 
 const container = new Container();
 // Bind the actual pool instance (Singleton)
@@ -27,6 +28,11 @@ container.bind<HealthController>(TYPES.HealthController).to(HealthController).in
 // Bind Repository and Controller
 container.bind<AdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
 container.bind<AdminController>(TYPES.AdminController).to(AdminController).inSingletonScope();
+container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository).inSingletonScope();
+
+import { ProfileController } from "../controllers/profileController";
+container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController).inSingletonScope();
+
 
 export { container };
 
