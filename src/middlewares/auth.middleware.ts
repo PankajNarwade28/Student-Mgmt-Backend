@@ -1,5 +1,6 @@
 // src/middlewares/auth.validation.ts
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
 // Middleware for Signup Validation
 export const validateSignup = (req: Request, res: Response, next: NextFunction) => {
@@ -64,4 +65,30 @@ export const validateLogin = (
 
   // Proceed if valid
   next();
+};
+
+
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  // 1. Get token from Headers
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1]; // Extracts 'token' from 'Bearer token'
+
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token missing" });
+  }
+
+  try {
+    // 2. Verify the token
+    const secret = process.env.JWT_SECRET || 'your_secret_key';
+    const decoded = jwt.verify(token, secret);
+
+    // 3. Attach decoded user to request object
+    // This allows the next middleware (authorize) to access req.user
+    (req as any).user = decoded;
+
+    next();
+  } catch (error) {
+    console.error("JWT Verification Error:", error);
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
