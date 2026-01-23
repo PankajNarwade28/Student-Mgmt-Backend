@@ -31,12 +31,15 @@ container.bind<AdminController>(TYPES.AdminController).to(AdminController).inSin
 container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository).inSingletonScope();
 
 import { ProfileController } from "../controllers/profileController";
+import { CourseController } from "../controllers/courseController";
+import { CourseRepository } from "../repositories/course.repository";
 container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController).inSingletonScope();
 
 const healthController = container.get<HealthController>(TYPES.HealthController);
 const healthRepo = container.get<HealthRepository>(TYPES.HealthRepository);
 
-
+container.bind<CourseRepository>(TYPES.CourseRepository).to(CourseRepository);
+container.bind<CourseController>(TYPES.CourseController).to(CourseController);
 export { container };
 
 

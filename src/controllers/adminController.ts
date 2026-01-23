@@ -25,7 +25,7 @@ export class AdminController {
       const newUser = await this.adminRepo.createUser(normalizedEmail, role || "Student");
 
       res.status(201).json({
-        message: "User created successfully with default password",
+        message: `User created successfully Pass: ${role}@2026`,
         user: newUser,
       });
     } catch (error) {
