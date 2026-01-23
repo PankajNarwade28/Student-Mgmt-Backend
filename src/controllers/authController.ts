@@ -6,10 +6,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
 import { ProfileRepository } from "../repositories/profile.repository";
-
  
 const JWT_SECRET = process.env.JWT_SECRET;
-
 
 //Decorator: This marks the AuthController so that the Inversify container can manage its lifecycle and dependencies
 // @inject(TYPES.UserRepository) tells Inversify which specific implementation to grab from the "warehouse."
@@ -20,6 +18,7 @@ export class AuthController {
     @inject(TYPES.UserRepository) private userRepo: UserRepository,
     @inject(TYPES.ProfileRepository) private profileRepo: ProfileRepository
   ) {}
+  
   login = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 

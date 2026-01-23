@@ -18,9 +18,7 @@ import { HealthController } from "./controllers/healthController";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import { AdminController } from "./controllers/adminController";
 
-// STEP 3: INITIALIZE REPOS AFTER ENV IS LOADED
-// const studentRepo = new StudentRepository();
-const healthRepo = new HealthRepository();
+ 
 
 const app: Application = express(); 
 const PORT = process.env.PORT || 3000;
@@ -67,6 +65,7 @@ app.use('/api/user', authMiddleware, userRoutes );
 
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
+container.get<HealthRepository>(TYPES.HealthRepository);
 app.get("/health", healthController.checkHealth);
 
 
