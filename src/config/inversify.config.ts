@@ -33,6 +33,9 @@ container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository)
 import { ProfileController } from "../controllers/profileController";
 container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController).inSingletonScope();
 
+const healthController = container.get<HealthController>(TYPES.HealthController);
+const healthRepo = container.get<HealthRepository>(TYPES.HealthRepository);
+
 
 export { container };
 
