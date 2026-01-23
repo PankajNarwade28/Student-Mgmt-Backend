@@ -65,6 +65,7 @@ export class AdminController {
 
   removeUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    console.log("Delete User ID:", id); // DEBUG HERE
     try {
       await this.adminRepo.deleteUser(id as string);
       res.status(200).json({ message: "User deleted successfully" });

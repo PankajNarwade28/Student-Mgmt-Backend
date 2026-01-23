@@ -30,7 +30,7 @@ export class AdminRepository {
       RETURNING id, email, role, is_active, created_at
     `;
 
-    try {
+    try { 
       // ONLY HASH ONCE HERE
 
       const { rows } = await this.pool.query(queryText, [
