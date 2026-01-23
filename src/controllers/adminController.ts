@@ -13,7 +13,7 @@ export class AdminController {
   addUser = async (req: Request, res: Response): Promise<void> => {
     const { email, role } = req.body;
 
-    console.log("AddUser Request Body:", req.body); // DEBUG HERE
+    // console.log("AddUser Request Body:", req.body); // DEBUG HERE
     try {
       // In your Repository or Controller
       const normalizedEmail = email.toLowerCase().trim();
@@ -65,7 +65,7 @@ export class AdminController {
 
   removeUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    console.log("Delete User ID:", id); // DEBUG HERE
+    // console.log("Delete User ID:", id); // DEBUG HERE
     try {
       await this.adminRepo.deleteUser(id as string);
       res.status(200).json({ message: "User deleted successfully" });

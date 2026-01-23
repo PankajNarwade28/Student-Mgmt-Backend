@@ -28,5 +28,7 @@ const courseController = container.get<CourseController>(TYPES.CourseController)
 // Ensure this path matches what you put in the api.get() call above
 router.get('/teachers',authMiddleware, authorize(['Admin']), courseController.getTeachers.bind(courseController)); 
 router.post('/addcourse',validateCourseData, authMiddleware, authorize(['Admin']),isValidTeacher, courseController.addCourse.bind(courseController));
-
+router.get('/courses',authMiddleware, authorize(['Admin']), courseController.getAllCourses.bind(courseController));
+router.delete('/courses/:id', authMiddleware, authorize(['Admin']), courseController.deleteCourse.bind(courseController));
+router.patch('/courses/:id/restore', authMiddleware, authorize(['Admin']), courseController.restoreCourse.bind(courseController));
 export default router;

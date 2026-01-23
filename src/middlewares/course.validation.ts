@@ -48,7 +48,7 @@ export const checkCourseAssignments = async (req: Request, res: Response, next: 
 
     // 2. Resolve CourseRepository via Inversify
     const courseRepo = container.get<CourseRepository>(TYPES.CourseRepository);
-    console.log("Checking course assignments for user:", id);
+    // console.log("Checking course assignments for user:", id);
     // 3. Check if this specific user (as a teacher) has any courses
     const assignments = await courseRepo.getCourseCountByTeacher(id);
 
