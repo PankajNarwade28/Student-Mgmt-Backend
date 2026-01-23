@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import { container } from "../config/inversify.config";
+import { CourseRepository } from "../repositories/course.repository";
+import { TYPES } from "../config/types";
 
 export const validateCourseData = (req: Request, res: Response, next: NextFunction) => {
   const { name, code, teacher_id } = req.body;
@@ -32,4 +35,35 @@ export const validateCourseData = (req: Request, res: Response, next: NextFuncti
 
   // If everything is fine, proceed to the next function
   next();
+};
+
+export const checkCourseAssignments = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, role } = req.body;
+
+    // 1. If the new role is still 'Teacher', no need to check assignments
+    if (role === 'Teacher') {
+      return next();
+    }
+
+    // 2. Resolve CourseRepository via Inversify
+    const courseRepo = container.get<CourseRepository>(TYPES.CourseRepository);
+    console.log("Checking course assignments for user:", id);
+    // 3. Check if this specific user (as a teacher) has any courses
+    const assignments = await courseRepo.getCourseCountByTeacher(id);
+
+    if (assignments > 0) {
+      // 4. Block the role change to prevent orphaned courses
+      return res.status(400).json({
+        status: "error",
+        message: `Cannot change role. This user is currently assigned to ${assignments} course(s). Please unassign the courses first.`
+      });
+    }
+
+    // 5. Proceed if no assignments found
+    return next();
+  } catch (error) {
+    console.error("Assignment Check Middleware Error:", error);
+    return res.status(500).json({ status: "error", message: "Internal server error during role validation" });
+  }
 };
