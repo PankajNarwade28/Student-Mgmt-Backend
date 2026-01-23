@@ -31,4 +31,5 @@ router.post('/addcourse',validateCourseData, authMiddleware, authorize(['Admin']
 router.get('/courses',authMiddleware, authorize(['Admin']), courseController.getAllCourses.bind(courseController));
 router.delete('/courses/:id', authMiddleware, authorize(['Admin']), courseController.deleteCourse.bind(courseController));
 router.patch('/courses/:id/restore', authMiddleware, authorize(['Admin']), courseController.restoreCourse.bind(courseController));
+router.put('/courses/:id', authMiddleware, authorize(['Admin']),isValidTeacher, courseController.updateCourse.bind(courseController));
 export default router;

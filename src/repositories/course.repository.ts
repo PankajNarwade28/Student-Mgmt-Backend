@@ -7,16 +7,23 @@ export class CourseRepository {
   constructor(@inject(TYPES.DbPool) private pool: Pool) {}
 
   // Fetch only active teachers for the dropdown
-  async getActiveTeachers() {
-    const query = `
-    SELECT id, email FROM users 
-    /* Changed 'Student' to 'Teacher' to match your database schema role */
-    WHERE role = 'Teacher' AND is_active = true
+async getActiveTeachers() {
+  const query = `
+    SELECT 
+      u.id, 
+      u.email, 
+      CASE 
+        WHEN TRIM(CONCAT(p.first_name, ' ', p.last_name)) = '' THEN u.email
+        ELSE CONCAT(p.first_name, ' ', p.last_name)
+      END AS teacher_name
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE u.role = 'Teacher' AND u.is_active = true
   `;
-    const { rows } = await this.pool.query(query); //
-    console.log(rows); //
-    return rows; //
-  }
+  
+  const { rows } = await this.pool.query(query);
+  return rows; 
+}
 
   // Create a new course
   async createCourse(data: any) {
@@ -38,9 +45,9 @@ export class CourseRepository {
   }
 
   // Get all courses with teacher details
-  async getAllCourses() {
-    const query = `
-   SELECT 
+async getAllCourses() {
+  const query = `
+    SELECT 
       c.id, c.name, c.code, c.description, c.created_at, c.deleted_at,
       u.email AS teacher_email,
       CONCAT(p.first_name, ' ', p.last_name) AS teacher_name
@@ -49,10 +56,9 @@ export class CourseRepository {
     LEFT JOIN profiles p ON u.id = p.user_id
     ORDER BY c.deleted_at DESC NULLS LAST, c.created_at DESC
   `;
-    const { rows } = await this.pool.query(query);
-    return rows;
-  }
-
+  const { rows } = await this.pool.query(query);
+  return rows;
+}
   // Soft delete a course
   async deleteCourse(courseId: number) {
     // Update the deleted_at timestamp instead of removing the row
@@ -68,5 +74,32 @@ export class CourseRepository {
   async restoreCourse(courseId: number) {
     const query = `UPDATE courses SET deleted_at = NULL WHERE id = $1`;
     await this.pool.query(query, [courseId]);
+  }
+
+  // Update course details
+  async updateCourse(
+    id: number,
+    data: {
+      name: string;
+      code: string;
+      description: string;
+      teacher_id: string;
+    },
+  ) {
+    const query = `
+    UPDATE courses 
+    SET name = $1, code = $2, description = $3, teacher_id = $4
+    WHERE id = $5
+    RETURNING *
+  `;
+    const values = [
+      data.name,
+      data.code,
+      data.description,
+      data.teacher_id,
+      id,
+    ];
+    const { rows } = await this.pool.query(query, values);
+    return rows[0];
   }
 }

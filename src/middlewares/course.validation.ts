@@ -56,7 +56,7 @@ export const checkCourseAssignments = async (req: Request, res: Response, next: 
       // 4. Block the role change to prevent orphaned courses
       return res.status(400).json({
         status: "error",
-        message: `Cannot change role. This user is currently assigned to ${assignments} course(s). Please unassign the courses first.`
+        message: `Can't Modify Teacher as This user is currently assigned to ${assignments} course(s). Please unassign the courses first.`
       });
     }
 

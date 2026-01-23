@@ -3,6 +3,14 @@ import { CourseRepository } from "./../repositories/course.repository";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../config/types";
 
+// Define the interface here so the class below can find it
+interface IUpdateCourseRequest {
+  name: string;
+  code: string;
+  description: string;
+  teacher_id: string; // The UUID from your users table
+}
+
 @injectable()
 export class CourseController {
   constructor(
@@ -13,7 +21,7 @@ export class CourseController {
   getTeachers = async (req: Request, res: Response) => {
     try {
       const teachers = await this.repository.getActiveTeachers();
-      console.log("Teachers found in DB:", teachers); // Check your terminal output
+      // console.log("Teachers found in DB:", teachers); // Check your terminal output
       return res.status(200).json(teachers);
     } catch (error) {
       return res.status(500).json({ message: "Failed to fetch teachers" });
@@ -47,9 +55,7 @@ export class CourseController {
     }
   };
 
-  /**
-   * Soft deletes a course by setting deleted_at to current timestamp.
-   */
+  // DELETE /api/admin/courses/:id
   deleteCourse = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -65,9 +71,7 @@ export class CourseController {
     }
   };
 
-  /**
-   * Restores a deleted course by setting deleted_at back to NULL.
-   */
+  // PATCH /api/admin/courses/:id/restore
   restoreCourse = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -80,6 +84,28 @@ export class CourseController {
       });
     } catch (error) {
       return res.status(500).json({ message: "Failed to restore course" });
+    }
+  };
+
+  // PUT /api/admin/courses/:id
+  updateCourse = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateData: IUpdateCourseRequest = req.body; // Explicit typing
+
+      const updatedCourse = await this.repository.updateCourse(Number(id), updateData);
+      
+      if (!updatedCourse) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      return res.status(200).json({ 
+        message: "Course updated successfully",
+        course: updatedCourse 
+      });
+    } catch (error: unknown) {
+      console.error("Update error:", error);
+      return res.status(500).json({ message: "Failed to update course" });
     }
   };
 }
