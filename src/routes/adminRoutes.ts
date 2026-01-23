@@ -14,7 +14,7 @@ const adminController = container.get<AdminController>(TYPES.AdminController);
 
 // Define the route
 router.post('/adduser',validateAdminAddUser, authMiddleware, authorize(['Admin']), adminController.addUser);
-router.get('/users', adminController.getUsers);
+router.get('/users', authMiddleware, authorize(['Admin']), adminController.getUsers);
 // admin.routes.ts
 router.put('/users/:id',validateAdminAddUser, authMiddleware, authorize(['Admin']), adminController.updateUser);
 router.delete('/users/:id', authMiddleware, authorize(['Admin']), adminController.removeUser);
