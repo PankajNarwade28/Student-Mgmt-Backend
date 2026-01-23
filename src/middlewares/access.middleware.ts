@@ -18,15 +18,12 @@ export const authorize = (allowedRoles: string[]) => {
             "Forbidden: You do not have permission to access this route.",
         });
       }
-
       // ✅ If everything is fine, proceed with your actual logic
-      return res.status(200).json({ message: "Access granted!" });
+      next();
     } catch (error) {
       console.error("Error in secure-route:", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
-
-    // 3. User is authorized, proceed to the controller
-    next();
+ 
   };
 };
