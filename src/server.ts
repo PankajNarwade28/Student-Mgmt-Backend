@@ -15,8 +15,7 @@ import { authorize } from "./middlewares/access.middleware";
 import { TYPES } from "./config/types";
 import { container } from "./config/inversify.config";
 import { HealthController } from "./controllers/healthController";
-import { authMiddleware } from "./middlewares/auth.middleware";
-import { AdminController } from "./controllers/adminController";
+import { authMiddleware } from "./middlewares/auth.middleware"; 
 
  
 
