@@ -11,7 +11,7 @@ const saveProfileHandler = profileController.saveProfile.bind(profileController)
 const getProfileHandler = profileController.getProfile.bind(profileController);
 
 router.get("/profile", authMiddleware, getProfileHandler);
-router.post("/profile", authMiddleware, saveProfileHandler);
+router.post("/profile", authMiddleware, saveProfileHandler); 
 
 
 export default router;

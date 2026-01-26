@@ -17,6 +17,7 @@ const adminController = container.get<AdminController>(TYPES.AdminController);
 // Define the route
 router.post('/adduser',validateAdminAddUser, authMiddleware, authorize(['Admin']), adminController.addUser);
 router.get('/users', authMiddleware, authorize(['Admin']), adminController.getUsers);
+router.get('/users/directory', authMiddleware, authorize(['Admin']), adminController.getUserDirectory);
 
 // admin.routes.ts
 router.put('/users/:id',validateAdminAddUser, authMiddleware, authorize(['Admin']),checkCourseAssignments, adminController.updateUser);
@@ -32,4 +33,5 @@ router.get('/courses',authMiddleware, authorize(['Admin']), courseController.get
 router.delete('/courses/:id', authMiddleware, authorize(['Admin']), courseController.deleteCourse.bind(courseController));
 router.patch('/courses/:id/restore', authMiddleware, authorize(['Admin']), courseController.restoreCourse.bind(courseController));
 router.put('/courses/:id', authMiddleware, authorize(['Admin']),isValidTeacher, courseController.updateCourse.bind(courseController));
+// router.get('/users/directory', authMiddleware, authorize(['Admin']), adminController.getUsers);
 export default router;
