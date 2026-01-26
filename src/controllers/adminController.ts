@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../config/types";
 import { AdminRepository } from "./../repositories/admin.repository";
+import { UserRepository } from "../repositories/user.repository";
+import { container } from "../config/inversify.config";
 
 @injectable()
 export class AdminController {
@@ -73,4 +75,20 @@ export class AdminController {
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
+
+  // Get User All Info for Directory
+  getUserDirectory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userRepository = container.get<UserRepository>(TYPES.UserRepository);
+    const users = await userRepository.getDetailedUserDirectory();
+    res.status(200).json({ success: true, users });
+  } catch (error: any) {
+    // This will send the actual SQL error message to the frontend console
+    res.status(500).json({ 
+      success: false, 
+      message: "Database error", 
+      error: error.message 
+    });
+  }
+};
 }
