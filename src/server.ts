@@ -61,6 +61,8 @@ app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
 // User Routes with auth middleware
 const userRoutes = require('./routes/userRoutes').default;
 app.use('/api/user', authMiddleware, userRoutes );
+import courseRoutes from './routes/courseRoutes';
+app.use('/api/courses',authMiddleware,  courseRoutes );
 
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
