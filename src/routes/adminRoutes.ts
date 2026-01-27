@@ -36,5 +36,10 @@ router.put('/courses/:id', authMiddleware, authorize(['Admin']),isValidTeacher, 
 // router.get('/users/directory', authMiddleware, authorize(['Admin']), adminController.getUsers);
 
 router.get('/students', authMiddleware, authorize(['Admin']), adminController.getAllStudents.bind(adminController));
-// router.get('/students/stats', authMiddleware, authorize(['Admin']), adminController.getStudentStats.bind(adminController));
+// router.get('/courses/enrollment-data', authMiddleware, authorize(['Admin']), courseController.fetchEnrollmentData.bind(courseController));
+// router.post('/courses/enrollments/add', authMiddleware, authorize(['Admin']), adminController.enrollStudent.bind(adminController));
+// router.post('/courses/enrollments/remove', authMiddleware, authorize(['Admin']), adminController.removeEnrollment.bind(adminController));
+router.get('/courses/enrollment-data', authMiddleware, authorize(['Admin']), courseController.fetchEnrollmentData.bind(courseController));
+// /api/courses/enrollments
+router.use('/courses/enrollments', authMiddleware, authorize(['Admin']), require('./enrollmentsRoutes').default);
 export default router;

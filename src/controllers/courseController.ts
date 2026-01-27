@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CourseRepository } from "./../repositories/course.repository";
 import { inject, injectable } from "inversify";
-import { TYPES } from "../config/types";  
+import { TYPES } from "../config/types";
 
 // Define the interface here so the class below can find it
 interface IUpdateCourseRequest {
@@ -130,64 +130,91 @@ export class CourseController {
     }
   };
 
-  //   try {
-  //     const { userId, role } = (req as AuthRequest).user; // Type assertion to access user info
-
-  //     if (role === "Student") {
-  //       const courses = await this.repository.getEnrolledCourses(userId);
-  //       return res.json(courses);
-  //     } else {
-  //       // If Teacher, show courses they are teaching
-  //       const courses = await this.repository.getAllAvailableCourses();
-  //       // Filter logic for specific teacher_id can be added here
-  //       return res.json(courses);
-  //     }
-  //   } catch (error) {
-  //     res.status(500).json({ message: "Error fetching courses", error });
-  //   }
-  // };
-  
-  // CourseController.ts
   getMyCourses = async (req: Request, res: Response) => {
-  try { 
-    const user = (req as any).user; 
-    const userId = user?.userId || user?.id; 
-    const role = user?.role;
+    try {
+      const user = (req as any).user;
+      const userId = user?.userId || user?.id;
+      const role = user?.role;
 
-    if (role === "Student") {
-      const enrolled = await this.repository.getEnrolledCourses(userId);
-      const available = await this.repository.getAvailableToEnroll(userId);
-      return res.json({ enrolled, available });
-    } 
-    
-    if (role === "Teacher") {
-      console.log("Fetching courses for Teacher UUID:", userId);
-      const courses = await this.repository.getTeacherCourses(userId);
-      return res.json(courses);
+      if (role === "Student") {
+        const enrolled = await this.repository.getEnrolledCourses(userId);
+        const available = await this.repository.getAvailableToEnroll(userId);
+        return res.json({ enrolled, available });
+      }
+
+      if (role === "Teacher") {
+        console.log("Fetching courses for Teacher UUID:", userId);
+        const courses = await this.repository.getTeacherCourses(userId);
+        return res.json(courses);
+      }
+
+      if (role === "Admin") {
+        const courses = await this.repository.getAllCourses();
+        return res.json(courses);
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching curriculum data" });
     }
+  };
 
-    if (role === "Admin") {
-      const courses = await this.repository.getAllCourses();
-      return res.json(courses);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching curriculum data" });
-  }
-};
-
-fetchInstructors = async (req: Request, res: Response) => {
+  fetchInstructors = async (req: Request, res: Response) => {
     try {
       // Call the repository method we created earlier
       const instructors = await this.repository.getAllInstructorsWithCourses();
-      
+
       // Return 200 OK with the data
       res.status(200).json(instructors);
     } catch (error: unknown) {
       console.error("Error in fetchInstructors:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch instructor directory", 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      res.status(500).json({
+        message: "Failed to fetch instructor directory",
+        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
+
+  // CourseController.ts
+  fetchEnrollmentData = async (req: Request, res: Response) => {
+    try {
+      const [courses, students] = await Promise.all([
+        this.repository.getEnrollmentDetails(),
+        this.repository.getActiveStudentsList(),
+      ]);
+      res.status(200).json({ courses, students });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching enrollment data" });
+    }
+  };
+
+  // EnrollmentController.ts
+
+add = async (req: Request, res: Response) => {
+  try {
+    const { studentId, courseId } = req.body;
+    if (!studentId || !courseId) {
+      return res.status(400).json({ message: "Student ID and Course ID are required" });
+    }
+    
+    const result = await this.repository.addEnrollment(studentId, courseId);
+    res.status(201).json({ message: "Student assigned successfully", data: result });
+  } catch (error) {
+    res.status(500).json({ message: "Error assigning student" });
+  }
+};
+
+remove = async (req: Request, res: Response) => {
+  try {
+    const { studentId, courseId } = req.body;
+    const result = await this.repository.removeEnrollment(studentId, courseId);
+    
+    if (!result) {
+      return res.status(404).json({ message: "Enrollment record not found" });
+    }
+    
+    res.status(200).json({ message: "Student removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error removing student" });
+  }
+};
+  
 }
