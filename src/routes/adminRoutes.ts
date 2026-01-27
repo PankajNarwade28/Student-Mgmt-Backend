@@ -34,4 +34,7 @@ router.delete('/courses/:id', authMiddleware, authorize(['Admin']), courseContro
 router.patch('/courses/:id/restore', authMiddleware, authorize(['Admin']), courseController.restoreCourse.bind(courseController));
 router.put('/courses/:id', authMiddleware, authorize(['Admin']),isValidTeacher, courseController.updateCourse.bind(courseController));
 // router.get('/users/directory', authMiddleware, authorize(['Admin']), adminController.getUsers);
+
+router.get('/students', authMiddleware, authorize(['Admin']), adminController.getAllStudents.bind(adminController));
+// router.get('/students/stats', authMiddleware, authorize(['Admin']), adminController.getStudentStats.bind(adminController));
 export default router;

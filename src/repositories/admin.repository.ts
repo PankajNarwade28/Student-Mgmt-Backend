@@ -5,10 +5,10 @@ import { TYPES } from "../config/types";
 
 @injectable()
 export class AdminRepository {
-
   // Inject the database pool directly
   constructor(@inject(TYPES.DbPool) private pool: Pool) {}
 
+  // Find user by email
   async findByEmail(email: string) {
     console.log("Searching for email:", email); // DEBUG HERE
     const query = "SELECT * FROM users WHERE email = $1";
@@ -16,6 +16,7 @@ export class AdminRepository {
     return rows[0];
   }
 
+  // Create a new user with hashed password
   async createUser(email: string, role: string): Promise<any> {
     console.log("Creating user with email:", email, "and role:", role); // DEBUG HERE
     // 1. Determine default password based on role
@@ -30,7 +31,7 @@ export class AdminRepository {
       RETURNING id, email, role, is_active, created_at
     `;
 
-    try { 
+    try {
       // ONLY HASH ONCE HERE
 
       const { rows } = await this.pool.query(queryText, [
@@ -46,6 +47,7 @@ export class AdminRepository {
     }
   }
 
+  // Fetch all users
   async getAllUsers() {
     // Make sure there is no WHERE clause hiding inactive users
     const query =
@@ -54,6 +56,7 @@ export class AdminRepository {
     return rows;
   }
 
+  // Update user details
   async updateUser(id: string, email: string, role: string): Promise<any> {
     const query = `
     UPDATE users 
@@ -78,8 +81,40 @@ export class AdminRepository {
     }
   }
 
+  // Delete user by ID
   async deleteUser(id: string): Promise<void> {
     const query = "DELETE FROM users WHERE id = $1";
     await this.pool.query(query, [id]);
+  }
+
+  // Fetch students along with their profile information
+
+  async getStudentsWithProfiles() {
+    const query = `
+    SELECT 
+      u.id, u.email, u.is_active, u.created_at,
+      p.first_name, p.last_name,
+      CONCAT(p.first_name, ' ', p.last_name) AS full_name
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE u.role = 'Student'
+    ORDER BY u.created_at DESC;
+  `;
+    const { rows } = await this.pool.query(query);
+    return rows;
+  }
+
+  // Fetch student statistics for dashboard
+  async getStudentStats() {
+    const query = `
+    SELECT 
+      COUNT(*) AS total_students,
+      COUNT(*) FILTER (WHERE is_active = true) AS active_students,
+      (SELECT COUNT(*) FROM enrollments) AS total_enrollments
+    FROM users 
+    WHERE role = 'Student';
+  `;
+    const { rows } = await this.pool.query(query);
+    return rows[0];
   }
 }

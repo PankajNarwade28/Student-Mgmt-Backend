@@ -7,7 +7,6 @@ import { container } from "../config/inversify.config";
 
 @injectable()
 export class AdminController {
-
   constructor(
     @inject(TYPES.AdminRepository) private adminRepo: AdminRepository,
   ) {}
@@ -24,7 +23,10 @@ export class AdminController {
         res.status(400).json({ message: "Email already registered" });
         return;
       }
-      const newUser = await this.adminRepo.createUser(normalizedEmail, role || "Student");
+      const newUser = await this.adminRepo.createUser(
+        normalizedEmail,
+        role || "Student",
+      );
 
       res.status(201).json({
         message: `User created successfully Pass: ${role}@2026`,
@@ -57,7 +59,7 @@ export class AdminController {
       const updatedUser = await this.adminRepo.updateUser(
         id as string,
         email.toLowerCase().trim(),
-        role,  
+        role,
       );
       res.status(200).json({ message: "User updated", user: updatedUser });
     } catch (error) {
@@ -78,17 +80,40 @@ export class AdminController {
 
   // Get User All Info for Directory
   getUserDirectory = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userRepository = container.get<UserRepository>(TYPES.UserRepository);
-    const users = await userRepository.getDetailedUserDirectory();
-    res.status(200).json({ success: true, users });
-  } catch (error: any) {
-    // This will send the actual SQL error message to the frontend console
-    res.status(500).json({ 
-      success: false, 
-      message: "Database error", 
-      error: error.message 
-    });
-  }
-};
+    try {
+      const userRepository = container.get<UserRepository>(
+        TYPES.UserRepository,
+      );
+      const users = await userRepository.getDetailedUserDirectory();
+      res.status(200).json({ success: true, users });
+    } catch (error: any) {
+      // This will send the actual SQL error message to the frontend console
+      res.status(500).json({
+        success: false,
+        message: "Database error",
+        error: error.message,
+      });
+    }
+  };
+
+  // UserController.ts
+  getAllStudents = async (req: Request, res: Response) => {
+    try {
+      // const students = await this.repository.getStudentsWithProfiles();
+      const students = await this.adminRepo.getStudentsWithProfiles();
+      res.status(200).json(students);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching students" });
+    }
+
+  //   getStudentStats = async (req: Request, res: Response) => {
+  //     try {
+  //       const stats = await this.adminRepo.getStudentStats();
+  //       res.status(200).json(stats);
+  //     } catch (error) {
+  //       res.status(500).json({ message: "Error fetching student stats" });
+  //     } 
+  // };
+}
+
 }
