@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CourseRepository } from "./../repositories/course.repository";
 import { inject, injectable } from "inversify";
-import { TYPES } from "../config/types";
+import { TYPES } from "../config/types";  
 
 // Define the interface here so the class below can find it
 interface IUpdateCourseRequest {
@@ -10,6 +10,14 @@ interface IUpdateCourseRequest {
   description: string;
   teacher_id: string; // The UUID from your users table
 }
+
+// interface AuthRequest extends Request {
+//   user: {
+//     userId: string;
+//     role: string;
+//     email?: string;
+//   };
+// }
 
 @injectable()
 export class CourseController {
@@ -93,19 +101,93 @@ export class CourseController {
       const { id } = req.params;
       const updateData: IUpdateCourseRequest = req.body; // Explicit typing
 
-      const updatedCourse = await this.repository.updateCourse(Number(id), updateData);
-      
+      const updatedCourse = await this.repository.updateCourse(
+        Number(id),
+        updateData,
+      );
+
       if (!updatedCourse) {
         return res.status(404).json({ message: "Course not found" });
       }
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: "Course updated successfully",
-        course: updatedCourse 
+        course: updatedCourse,
       });
     } catch (error: unknown) {
       console.error("Update error:", error);
       return res.status(500).json({ message: "Failed to update course" });
+    }
+  };
+
+  // CourseController.ts
+  fetchAvailableCourses = async (req: Request, res: Response) => {
+    try {
+      const courses = await this.repository.getAllAvailableCourses();
+      res.status(200).json(courses);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch courses" });
+    }
+  };
+
+  //   try {
+  //     const { userId, role } = (req as AuthRequest).user; // Type assertion to access user info
+
+  //     if (role === "Student") {
+  //       const courses = await this.repository.getEnrolledCourses(userId);
+  //       return res.json(courses);
+  //     } else {
+  //       // If Teacher, show courses they are teaching
+  //       const courses = await this.repository.getAllAvailableCourses();
+  //       // Filter logic for specific teacher_id can be added here
+  //       return res.json(courses);
+  //     }
+  //   } catch (error) {
+  //     res.status(500).json({ message: "Error fetching courses", error });
+  //   }
+  // };
+  
+  // CourseController.ts
+  getMyCourses = async (req: Request, res: Response) => {
+  try { 
+    const user = (req as any).user; 
+    const userId = user?.userId || user?.id; 
+    const role = user?.role;
+
+    if (role === "Student") {
+      const enrolled = await this.repository.getEnrolledCourses(userId);
+      const available = await this.repository.getAvailableToEnroll(userId);
+      return res.json({ enrolled, available });
+    } 
+    
+    if (role === "Teacher") {
+      console.log("Fetching courses for Teacher UUID:", userId);
+      const courses = await this.repository.getTeacherCourses(userId);
+      return res.json(courses);
+    }
+
+    if (role === "Admin") {
+      const courses = await this.repository.getAllCourses();
+      return res.json(courses);
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching curriculum data" });
+  }
+};
+
+fetchInstructors = async (req: Request, res: Response) => {
+    try {
+      // Call the repository method we created earlier
+      const instructors = await this.repository.getAllInstructorsWithCourses();
+      
+      // Return 200 OK with the data
+      res.status(200).json(instructors);
+    } catch (error: unknown) {
+      console.error("Error in fetchInstructors:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch instructor directory", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   };
 }

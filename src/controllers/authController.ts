@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
-import { ProfileRepository } from "../repositories/profile.repository";
+import { ProfileRepository } from "../repositories/profile.repository";  
  
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -29,7 +29,7 @@ export class AuthController {
         !user ||
         // !user.is_active ||   // Uncomment if you want to restrict login for inactive users in future.
         !(await bcrypt.compare(password, user.password))
-      ) {
+      ) { 
         res.status(401).json({ message: "Invalid email or password" });
         return;
       }
@@ -40,13 +40,13 @@ export class AuthController {
         { expiresIn: "24h" },
       );
       const profile = await this.profileRepo.getProfileByUserId(user.id);
-      res.json({
+       res.json({
         token,
         user: { id: user.id, email: user.email, role: user.role },
         profileCompleted: !!profile // true if profile exists, false otherwise
       });
     } catch (error) {
-      res.status(500).json({ error: "Login failed" });
+       res.status(500).json({ error: "Login failed" });
     }
   };
 
@@ -58,7 +58,7 @@ export class AuthController {
     // 1. Check if user exists using repo
     const existingUser = await this.userRepo.findByEmail(email);
     if (existingUser) {
-      res.status(400).json({ message: "Email already registered" });
+       res.status(400).json({ message: "Email already registered" });
       return;
     }
 
@@ -67,10 +67,9 @@ export class AuthController {
 
     // 3. Save using repo
     const user = await this.userRepo.createUser(email, hashedPassword, role || 'Student');
-
-    res.status(201).json({ message: "User registered successfully", user });
+     res.status(201).json({ message: "User registered successfully", user });
   } catch (error) {
-    res.status(500).json({ error: "Registration failed" });
+     res.status(500).json({ error: "Registration failed" });
   }
 };
 
