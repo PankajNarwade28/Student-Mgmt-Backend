@@ -12,5 +12,7 @@ export const TYPES = {
     ProfileController: Symbol.for("ProfileController"),
    CourseController: Symbol.for("CourseController"),
     CourseRepository: Symbol.for("CourseRepository"),
+    AuditRepository: Symbol.for("AuditRepository"),
+    AuditController: Symbol.for("AuditController"),
 };
 export type TYPES = typeof TYPES;

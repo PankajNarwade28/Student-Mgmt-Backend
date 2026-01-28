@@ -1,46 +1,46 @@
 import "reflect-metadata";
 import { Container } from "inversify";
 import { TYPES } from "./types";
+import { pool } from "./db";
+import { Pool } from "pg";
+
+// Repositories
 import { UserRepository } from "../repositories/user.repository";
 import { HealthRepository } from "../repositories/health.repository";
 import { StudentRepository } from "../repositories/student.repository";
-import { AuthController } from "../controllers/authController";
-import { pool } from "./db";
-import { Pool } from "pg";
-import { HealthController } from "../controllers/healthController";
-import { AdminController } from "../controllers/adminController";
 import { AdminRepository } from "../repositories/admin.repository";
 import { ProfileRepository } from "../repositories/profile.repository";
+import { CourseRepository } from "../repositories/course.repository";
+import { AuditRepository } from "../repositories/audit.repository";
+
+// Controllers
+import { AuthController } from "../controllers/authController";
+import { HealthController } from "../controllers/healthController";
+import { AdminController } from "../controllers/adminController";
+import { ProfileController } from "../controllers/profileController";
+import { CourseController } from "../controllers/courseController";
+import { AuditController } from "../controllers/auditController";
 
 const container = new Container();
-// Bind the actual pool instance (Singleton)
+
+// 1. Bind Database Pool
 container.bind<Pool>(TYPES.DbPool).toConstantValue(pool);
 
-// Bind the Repository
+// 2. Bind All Repositories (Singleton Scope)
 container.bind<UserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
 container.bind<HealthRepository>(TYPES.HealthRepository).to(HealthRepository).inSingletonScope();
 container.bind<StudentRepository>(TYPES.StudentRepository).to(StudentRepository).inSingletonScope();
+container.bind<AdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
+container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository).inSingletonScope();
+container.bind<CourseRepository>(TYPES.CourseRepository).to(CourseRepository).inSingletonScope();
+container.bind<AuditRepository>(TYPES.AuditRepository).to(AuditRepository).inSingletonScope();
 
-// Bind the Controller
+// 3. Bind All Controllers (Singleton Scope)
 container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingletonScope();
 container.bind<HealthController>(TYPES.HealthController).to(HealthController).inSingletonScope();
-
-// Bind Repository and Controller
-container.bind<AdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
 container.bind<AdminController>(TYPES.AdminController).to(AdminController).inSingletonScope();
-container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository).inSingletonScope();
-
-import { ProfileController } from "../controllers/profileController";
-import { CourseController } from "../controllers/courseController";
-import { CourseRepository } from "../repositories/course.repository";
 container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController).inSingletonScope();
+container.bind<CourseController>(TYPES.CourseController).to(CourseController).inSingletonScope();
+container.bind<AuditController>(TYPES.AuditController).to(AuditController).inSingletonScope();
 
-const healthController = container.get<HealthController>(TYPES.HealthController);
-const healthRepo = container.get<HealthRepository>(TYPES.HealthRepository);
-
-container.bind<CourseRepository>(TYPES.CourseRepository).to(CourseRepository);
-container.bind<CourseController>(TYPES.CourseController).to(CourseController);
 export { container };
-
-
-// bind the classes in a central config file.

@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { Pool } from "pg";
-import { TYPES } from "../config/types";
-import { pool } from "../config/db";
+import { TYPES } from "../config/types"; 
+
 
 @injectable()
 export class CourseRepository {
