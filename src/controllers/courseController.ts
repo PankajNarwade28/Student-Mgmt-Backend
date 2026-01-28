@@ -186,35 +186,6 @@ export class CourseController {
     }
   };
 
-  // EnrollmentController.ts
-
-add = async (req: Request, res: Response) => {
-  try {
-    const { studentId, courseId } = req.body;
-    if (!studentId || !courseId) {
-      return res.status(400).json({ message: "Student ID and Course ID are required" });
-    }
-    
-    const result = await this.repository.addEnrollment(studentId, courseId);
-    res.status(201).json({ message: "Student assigned successfully", data: result });
-  } catch (error) {
-    res.status(500).json({ message: "Error assigning student" });
-  }
-};
-
-remove = async (req: Request, res: Response) => {
-  try {
-    const { studentId, courseId } = req.body;
-    const result = await this.repository.removeEnrollment(studentId, courseId);
-    
-    if (!result) {
-      return res.status(404).json({ message: "Enrollment record not found" });
-    }
-    
-    res.status(200).json({ message: "Student removed successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error removing student" });
-  }
-};
+  
   
 }

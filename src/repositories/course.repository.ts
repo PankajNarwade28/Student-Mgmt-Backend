@@ -265,35 +265,5 @@ export class CourseRepository {
     return rows;
   }
 
-  // Assign a student to a course
-
-  // enrollment.repository.ts
-  async addEnrollment(studentId: string, courseId: number) {
-    const query = `
-    INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
-    VALUES ($1::uuid, $2, 'Active', CURRENT_TIMESTAMP) 
-    ON CONFLICT (student_id, course_id) DO NOTHING
-    RETURNING *;
-  `;
-    // The ::uuid tells PostgreSQL to convert the string to a UUID type
-    const { rows } = await this.pool.query(query, [studentId, courseId]);
-    return rows[0];
-  }
-
-  // Remove a student from a course
-  async removeEnrollment(studentId: string, courseId: number) {
-    console.log(
-      "Removing enrollment for Student ID:",
-      studentId,
-      "from Course ID:",
-      courseId,
-    );
-    const query = `
-    DELETE FROM enrollments 
-    WHERE student_id = $1 AND course_id = $2
-    RETURNING *;
-  `;
-    const { rows } = await this.pool.query(query, [studentId, courseId]);
-    return rows[0];
-  }
+  
 }

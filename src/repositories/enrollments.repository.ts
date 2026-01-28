@@ -37,21 +37,15 @@ export class EnrollmentRepository {
   }
 
   async addEnrollment(studentId: string, courseId: number) {
-    console.log(
-      "Adding enrollment for Student ID:",
-      studentId,
-      "to Course ID:",
-      courseId,
-    );
-    const query = `
+  const query = `
     INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
-    VALUES ($1, $2, 'Enrolled', CURRENT_TIMESTAMP)
+    VALUES ($1::uuid, $2, 'Active', CURRENT_TIMESTAMP) -- Changed from 'Enrolled' to 'Active'
     ON CONFLICT (student_id, course_id) DO NOTHING
     RETURNING *;
   `;
-    const { rows } = await this.pool.query(query, [studentId, courseId]);
-    return rows[0];
-  }
+  const { rows } = await this.pool.query(query, [studentId, courseId]);
+  return rows[0];
+}
 
   async removeEnrollment(studentId: string, courseId: number) {
     console.log(
