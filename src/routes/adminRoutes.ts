@@ -11,9 +11,12 @@ import {
   validateCourseData,
 } from "../middlewares/course.validation";
 import { isValidTeacher } from "../middlewares/isValidTeacher.middleware";
-import auditController, {
-  AuditController,
-} from "../controllers/auditController";
+
+import { RequestController } from "../controllers/requestController";
+
+const requestController = container.get<RequestController>(
+  TYPES.RequestController,
+);
 
 const router = express.Router();
 
@@ -57,12 +60,7 @@ router.delete(
   checkCourseAssignments,
   adminController.removeUser,
 );
-
-// admin.routes.ts
-const courseController = container.get<CourseController>(
-  TYPES.CourseController,
-);
-
+const courseController = container.get<CourseController>(TYPES.CourseController);
 // Ensure this path matches what you put in the api.get() call above
 router.get(
   "/teachers",
@@ -103,29 +101,41 @@ router.put(
   isValidTeacher,
   courseController.updateCourse.bind(courseController),
 );
-// router.get('/users/directory', authMiddleware, authorize(['Admin']), adminController.getUsers);
-
 router.get(
   "/students",
   authMiddleware,
   authorize(["Admin"]),
   adminController.getAllStudents.bind(adminController),
 );
-// router.get('/courses/enrollment-data', authMiddleware, authorize(['Admin']), courseController.fetchEnrollmentData.bind(courseController));
-// router.post('/courses/enrollments/add', authMiddleware, authorize(['Admin']), adminController.enrollStudent.bind(adminController));
-// router.post('/courses/enrollments/remove', authMiddleware, authorize(['Admin']), adminController.removeEnrollment.bind(adminController));
+
 router.get(
   "/courses/enrollment-data",
   authMiddleware,
   authorize(["Admin"]),
   courseController.fetchEnrollmentData.bind(courseController),
 );
-// /api/courses/enrollments
+
 router.use(
   "/courses/enrollments",
   authMiddleware,
   authorize(["Admin"]),
   require("./enrollmentsRoutes").default,
 );
+// router.get("/requests", requestController.getRequests);
+// router.patch("/requests/:id", requestController.updateRequestStatus);
+// router.delete("/requests/:id", requestController.removeRequest);
+// For your admin request management
+router.get("/requests", requestController.getRequests);
+ 
+// src/routes/adminRoutes.ts
 
+// 1. Fetch all detailed requests (Student Name + Course Name)
+router.get("/requests", requestController.getRequests);
+
+// 2. Handle the decision (Accept/Enroll or Reject/Delete)
+// This replaces updateRequestStatus and removeRequest
+router.post("/requests/:id/decision", requestController.handleDecision);
+
+// Note: If you no longer have updateRequestStatus or removeRequest 
+// in your RequestController class, DELETE those lines to fix the TSError.
 export default router;
