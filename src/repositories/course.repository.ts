@@ -265,5 +265,20 @@ export class CourseRepository {
     return rows;
   }
 
+  async requestEnrollment(studentId: string, courseId: number) {
+  const query = `
+    INSERT INTO enrollment_requests (student_id, course_id, status)
+    VALUES ($1, $2, 'pending')
+    ON CONFLICT (student_id, course_id) DO NOTHING
+    RETURNING *;
+  `;
+  try {
+    const { rows } = await this.pool.query(query, [studentId, courseId]);
+    return rows[0]; 
+  } catch (error: any) {
+    console.error("Database Error:", error.message);
+    throw new Error("Failed to create enrollment request");
+  }
+}
   
 }

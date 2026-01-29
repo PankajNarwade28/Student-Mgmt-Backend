@@ -186,6 +186,34 @@ export class CourseController {
     }
   };
 
+  // POST /api/courses/request-enrollment for students to request enrollment
+  postEnrollmentRequest = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.body;
+    const studentId = (req as any).user.id; // Extracted from JWT via authMiddleware
+
+    if (!courseId) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    const result = await this.repository.requestEnrollment(studentId, courseId);
+
+    if (!result) {
+      return res.status(409).json({ 
+        message: "You have already requested enrollment for this course." 
+      });
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      message: "Request submitted successfully" 
+    });
+  } catch (error: unknown) {
+    console.error("Error in postEnrollmentRequest:", error);
+    res.status(500).json({ message: "Server error handling enrollment request" });
+  }
+};
+
   
   
 }

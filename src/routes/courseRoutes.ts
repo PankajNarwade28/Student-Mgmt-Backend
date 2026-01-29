@@ -15,4 +15,10 @@ const instructorHandler = courseController.fetchInstructors.bind(courseControlle
 // If anyone can see faculty, remove authMiddleware
 router.get("/instructors", authMiddleware, instructorHandler);
 
+router.post(
+  "/request-enrollment", 
+  authMiddleware, 
+  courseController.postEnrollmentRequest
+);
+
 export default router;
