@@ -12,17 +12,45 @@ const controller = new TeacherController(repository);
 
 // Prefix: /api/teacher
 router.get(
-  "/courses/:courseId/students", 
-  authMiddleware, 
-  authorize(['Teacher', 'Admin']), 
-  controller.fetchCourseStudents
+  "/courses/:courseId/students",
+  authMiddleware,
+  authorize(["Teacher", "Admin"]),
+  controller.fetchCourseStudents,
 );
 
 router.post(
-  "/grades", 
-  authMiddleware, 
-  authorize(['Teacher', 'Admin']), 
-  controller.submitGrade
+  "/grades",
+  authMiddleware,
+  authorize(["Teacher", "Admin"]),
+  controller.submitGrade,
+);
+
+router.post(
+  "/announcements",
+  authMiddleware,
+  authorize(["Teacher", "Admin"]),
+  controller.postAnnouncement,
+);
+router.get(
+  "/courses/:courseId/announcements",
+  authMiddleware,
+  authorize(["Teacher", "Admin", "Student"]),
+  controller.fetchAnnouncements,
+);
+
+// router.ts
+router.get(
+  "/courses/:courseId/announcements",
+  authMiddleware,
+  controller.fetchAnnouncements,
+);
+ 
+
+router.delete(
+  "/announcements/:id",
+  authMiddleware,
+  authorize(["Teacher", "Admin"]),
+  controller.removeAnnouncement,
 );
 
 export default router;
