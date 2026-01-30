@@ -1,8 +1,13 @@
 import { Request, Response } from "express";
 import { EnrollmentRepository } from "../repositories/enrollments.repository";
+import { inject } from "inversify";
+import { TYPES } from "../config/types";
 
 export class EnrollmentController {
-  constructor(private repository: EnrollmentRepository) {}
+  constructor(
+    @inject(TYPES.EnrollmentRepository)
+    private readonly repository: EnrollmentRepository,
+  ) {}
 
   // Gets the combined data for the Enrollments UI
   fetchEnrollmentData = async (req: Request, res: Response) => {
@@ -13,6 +18,7 @@ export class EnrollmentController {
       ]);
       res.status(200).json({ courses, students });
     } catch (error) {
+      console.error("Error fetching enrollment data:", error);
       res.status(500).json({ message: "Error fetching enrollment data" });
     }
   };
@@ -50,6 +56,7 @@ export class EnrollmentController {
       }
       res.status(200).json({ message: "Student removed successfully" });
     } catch (error) {
+      console.error("Error removing enrollment:", error);
       res.status(500).json({ message: "Error removing student" });
     }
   };
@@ -70,6 +77,7 @@ export class EnrollmentController {
         .status(201)
         .json({ message: "Student assigned successfully", data: result });
     } catch (error) {
+      console.error("Error adding enrollment:", error);
       res.status(500).json({ message: "Error assigning student" });
     }
   };
@@ -88,7 +96,58 @@ export class EnrollmentController {
 
       res.status(200).json({ message: "Student removed successfully" });
     } catch (error) {
+      console.error("Error removing enrollment:", error);
       res.status(500).json({ message: "Error removing student" });
     }
   };
+
+  /**
+   * GET /api/admin/courses/:courseId/enrollments
+   */
+  getCourseEnrollments = async (req: Request, res: Response) => {
+    try {
+      const { courseId } = req.params;
+
+      // 1. Validation: Ensure courseId is a valid number
+      const numericCourseId = Number(courseId);
+      if (Number.isNaN(numericCourseId)) {
+        return res.status(400).json({ message: "Invalid Course ID format" });
+      }
+      // 2. Fetch enrollments from the repository
+      const enrollments =
+        await this.repository.getEnrollmentsByCourse(numericCourseId);
+      console.log("Fetched Enrollments:", enrollments);
+
+      // 3. Response
+      return res.status(200).json(enrollments);
+    } catch (error: unknown) {
+      console.error("Controller Error (getCourseEnrollments):", error);
+      return res
+        .status(500)
+        .json({ message: "Internal server error fetching enrollments" });
+    }
+  };
+
+  /**
+   * PATCH /api/admin/enrollments/:id/status
+   * Triggered by the status dropdown in the frontend
+   */
+
+  // Inside EnrollmentController.ts
+updateEnrollmentStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const adminId = (req as any).user.id;
+
+    console.log("DEBUG: Data received:", { id, status, adminId });
+
+    const updated = await this.repository.updateEnrollmentStatus(Number(id), status, adminId);
+    res.status(200).json(updated);
+  } catch (error: any) {
+    // THIS LINE IS CRITICAL: Look at your terminal output now!
+    console.error("BACKEND CRASH LOG:", error.message); 
+    res.status(500).json({ message: "Update failed", error: error.message });
+  }
+};
 }

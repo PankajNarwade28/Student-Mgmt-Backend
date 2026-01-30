@@ -8,28 +8,31 @@ import { container } from "../config/inversify.config";
 @injectable()
 export class AdminController {
   constructor(
-    @inject(TYPES.AdminRepository) private adminRepo: AdminRepository,
+    @inject(TYPES.AdminRepository) private readonly adminRepo: AdminRepository,
   ) {}
+
+  // ==========================================
+  // 1. Identity & Access Management (User CRUD)
+  // ==========================================
 
   addUser = async (req: Request, res: Response): Promise<void> => {
     const { email, role } = req.body;
-
-    // console.log("AddUser Request Body:", req.body); // DEBUG HERE
     try {
-      // In your Repository or Controller
       const normalizedEmail = email.toLowerCase().trim();
       const existingUser = await this.adminRepo.findByEmail(normalizedEmail);
+
       if (existingUser) {
         res.status(400).json({ message: "Email already registered" });
         return;
       }
+
       const newUser = await this.adminRepo.createUser(
         normalizedEmail,
         role || "Student",
       );
 
       res.status(201).json({
-        message: `User created successfully Pass: ${role}@2026`,
+        message: `User created successfully. Default Pass: ${role}@2026`,
         user: newUser,
       });
     } catch (error) {
@@ -40,14 +43,10 @@ export class AdminController {
 
   getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-      const users = await this.adminRepo.getAllUsers(); // MUST await
-      console.log("Users fetched from DB:", users.length);
-
-      res.status(200).json({
-        success: true,
-        users: users, // Ensure this key matches your frontend
-      });
+      const users = await this.adminRepo.getAllUsers();
+      res.status(200).json({ success: true, users });
     } catch (error) {
+      console.error("GetUsers Error:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   };
@@ -63,22 +62,26 @@ export class AdminController {
       );
       res.status(200).json({ message: "User updated", user: updatedUser });
     } catch (error) {
+      console.error("UpdateUser Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
 
   removeUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    // console.log("Delete User ID:", id); // DEBUG HERE
     try {
       await this.adminRepo.deleteUser(id as string);
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
+      console.error("RemoveUser Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
 
-  // Get User All Info for Directory
+  // ==========================================
+  // 2. Directory & Reporting Services
+  // ==========================================
+
   getUserDirectory = async (req: Request, res: Response): Promise<void> => {
     try {
       const userRepository = container.get<UserRepository>(
@@ -87,7 +90,7 @@ export class AdminController {
       const users = await userRepository.getDetailedUserDirectory();
       res.status(200).json({ success: true, users });
     } catch (error: any) {
-      // This will send the actual SQL error message to the frontend console
+      console.error("GetUserDirectory Error:", error);
       res.status(500).json({
         success: false,
         message: "Database error",
@@ -96,24 +99,36 @@ export class AdminController {
     }
   };
 
-  // UserController.ts
   getAllStudents = async (req: Request, res: Response) => {
     try {
-      // const students = await this.repository.getStudentsWithProfiles();
       const students = await this.adminRepo.getStudentsWithProfiles();
       res.status(200).json(students);
     } catch (error) {
+      console.error("Get All Students Error:", error);
       res.status(500).json({ message: "Error fetching students" });
     }
+  };
 
-  //   getStudentStats = async (req: Request, res: Response) => {
-  //     try {
-  //       const stats = await this.adminRepo.getStudentStats();
-  //       res.status(200).json(stats);
-  //     } catch (error) {
-  //       res.status(500).json({ message: "Error fetching student stats" });
-  //     } 
-  // };
-}
+  // ==========================================
+  // 3. Enrollment Lifecycle Management
+  // ==========================================
 
+  /**
+   * GET /api/admin/courses/:courseId/enrollments
+   * Returns student list for the EnrollmentStatus table
+   */
+  getCourseEnrollments = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { courseId } = req.params;
+      const enrollments = await this.adminRepo.getStudentsByCourse(
+        Number(courseId),
+      );
+      res.status(200).json(enrollments);
+    } catch (error) {
+      console.error("Fetch Enrollments Error:", error);
+      res.status(500).json({ message: "Failed to fetch course enrollments" });
+    }
+  };
+
+  
 }
