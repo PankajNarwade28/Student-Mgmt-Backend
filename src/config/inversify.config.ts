@@ -22,6 +22,8 @@ import { CourseController } from "../controllers/courseController";
 import { AuditController } from "../controllers/auditController";
 import { RequestController } from "../controllers/requestController";
 import { RequestRepository } from "../repositories/request.repository";
+import { EnrollmentRepository } from "../repositories/enrollments.repository";
+import { EnrollmentController } from "../controllers/enrollmentsController";
 
 const container = new Container();
 
@@ -37,6 +39,7 @@ container.bind<ProfileRepository>(TYPES.ProfileRepository).to(ProfileRepository)
 container.bind<CourseRepository>(TYPES.CourseRepository).to(CourseRepository).inSingletonScope();
 container.bind<AuditRepository>(TYPES.AuditRepository).to(AuditRepository).inSingletonScope(); 
 container.bind<RequestRepository>(TYPES.RequestRepository).to(RequestRepository).inSingletonScope();
+container.bind<EnrollmentRepository>(TYPES.EnrollmentRepository).to(EnrollmentRepository).inSingletonScope();
 
 
 // 3. Bind All Controllers (Singleton Scope)
@@ -46,7 +49,7 @@ container.bind<AdminController>(TYPES.AdminController).to(AdminController).inSin
 container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController).inSingletonScope();
 container.bind<CourseController>(TYPES.CourseController).to(CourseController).inSingletonScope();
 container.bind<AuditController>(TYPES.AuditController).to(AuditController).inSingletonScope(); 
-container.bind<RequestController>(TYPES.RequestController).to(RequestController).inSingletonScope();
-
+container.bind<RequestController>(TYPES.RequestController).to(RequestController).inSingletonScope(); 
+container.bind<EnrollmentController>(TYPES.EnrollmentController).to(EnrollmentController).inSingletonScope();
 
 export { container };
