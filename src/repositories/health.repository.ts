@@ -4,7 +4,7 @@ import { TYPES } from '../config/types';
 
 @injectable()
 export class HealthRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
   async isDatabaseHealthy(): Promise<boolean> {
     try {
       await this.pool.query("SELECT 1"); // trivial query to check connectivity

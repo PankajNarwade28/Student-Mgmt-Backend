@@ -5,69 +5,57 @@ import { TYPES } from "../config/types";
 
 @injectable()
 export class AdminRepository {
-  // Inject the database pool directly
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
-  // Find user by email
+  // ==========================================
+  // 1. User Management (Core Auth/Users)
+  // ==========================================
+
   async findByEmail(email: string) {
-    console.log("Searching for email:", email); // DEBUG HERE
     const query = "SELECT * FROM users WHERE email = $1";
     const { rows } = await this.pool.query(query, [email]);
     return rows[0];
   }
 
-  // Create a new user with hashed password
   async createUser(email: string, role: string): Promise<any> {
-    console.log("Creating user with email:", email, "and role:", role); // DEBUG HERE
-    // 1. Determine default password based on role
-    // Normalize role to lowercase to avoid "Teacher" vs "teacher" mismatches
     const defaultPassword =
       role.toLowerCase() === "teacher" ? "Teacher@2026" : "Student@2026";
-
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
-    const queryText = `
+
+    const query = `
       INSERT INTO users (email, password, role, is_active) 
       VALUES ($1, $2, $3, $4) 
       RETURNING id, email, role, is_active, created_at
     `;
 
     try {
-      // ONLY HASH ONCE HERE
-
-      const { rows } = await this.pool.query(queryText, [
+      const { rows } = await this.pool.query(query, [
         email,
         hashedPassword,
         role,
-        false, // is_active set to false
+        false,
       ]);
       return rows[0];
-    } catch (error: any) {
+    } catch (error) {
       console.error("Database error during user creation:", error);
       throw error;
     }
   }
 
-  // Fetch all users
   async getAllUsers() {
-    // Make sure there is no WHERE clause hiding inactive users
     const query =
-      "SELECT id, email, role, is_active ,created_at, updated_at FROM users";
+      "SELECT id, email, role, is_active, created_at, updated_at FROM users";
     const { rows } = await this.pool.query(query);
     return rows;
   }
 
-  // Update user details
   async updateUser(id: string, email: string, role: string): Promise<any> {
     const query = `
-    UPDATE users 
-    SET 
-      email = $1, 
-      role = $2, 
-      updated_at = NOW() -- This ensures the timestamp changes
-    WHERE id = $3 
-    RETURNING id, email, role, is_active, updated_at
-  `;
-
+      UPDATE users 
+      SET email = $1, role = $2, updated_at = NOW() 
+      WHERE id = $3 
+      RETURNING id, email, role, is_active, updated_at
+    `;
     try {
       const { rows } = await this.pool.query(query, [
         email.toLowerCase().trim(),
@@ -81,40 +69,131 @@ export class AdminRepository {
     }
   }
 
-  // Delete user by ID
   async deleteUser(id: string): Promise<void> {
     const query = "DELETE FROM users WHERE id = $1";
     await this.pool.query(query, [id]);
   }
 
-  // Fetch students along with their profile information
+  // ==========================================
+  // 2. Student & Profile Management
+  // ==========================================
 
   async getStudentsWithProfiles() {
     const query = `
-    SELECT 
-      u.id, u.email, u.is_active, u.created_at,
-      p.first_name, p.last_name,
-      CONCAT(p.first_name, ' ', p.last_name) AS full_name
-    FROM users u
-    LEFT JOIN profiles p ON u.id = p.user_id
-    WHERE u.role = 'Student'
-    ORDER BY u.created_at DESC;
-  `;
+      SELECT 
+        u.id, u.email, u.is_active, u.created_at,
+        p.first_name, p.last_name,
+        CONCAT(p.first_name, ' ', p.last_name) AS full_name
+      FROM users u
+      LEFT JOIN profiles p ON u.id = p.user_id
+      WHERE u.role = 'Student'
+      ORDER BY u.created_at DESC;
+    `;
     const { rows } = await this.pool.query(query);
     return rows;
   }
 
-  // Fetch student statistics for dashboard
   async getStudentStats() {
     const query = `
-    SELECT 
-      COUNT(*) AS total_students,
-      COUNT(*) FILTER (WHERE is_active = true) AS active_students,
-      (SELECT COUNT(*) FROM enrollments) AS total_enrollments
-    FROM users 
-    WHERE role = 'Student';
-  `;
+      SELECT 
+        COUNT(*) AS total_students,
+        COUNT(*) FILTER (WHERE is_active = true) AS active_students,
+        (SELECT COUNT(*) FROM enrollments) AS total_enrollments
+      FROM users 
+      WHERE role = 'Student';
+    `;
     const { rows } = await this.pool.query(query);
     return rows[0];
+  }
+
+  // ==========================================
+  // 3. Enrollment Management
+  // ==========================================
+
+  /**
+   * Fetches students for a specific course to be used in the EnrollmentStatus.tsx table
+   */
+  // async getStudentsByCourse(courseId: number) {
+  //   const query = `
+  //     SELECT
+  //       e.id as enrollment_id,
+  //       u.id as student_id,
+  //       CONCAT(p.first_name, ' ', p.last_name) as student_name,
+  //       e.status
+  //     FROM enrollments e
+  //     JOIN users u ON e.student_id = u.id
+  //     LEFT JOIN profiles p ON u.id = p.user_id
+  //     WHERE e.course_id = $1;
+  //   `;
+  //   const { rows } = await this.pool.query(query, [courseId]);
+  //   return rows;
+  // }
+
+  async updateEnrollmentStatus(
+    enrollmentId: number,
+    status: string,
+    adminId: string,
+  ) {
+    const query = `
+      UPDATE enrollments 
+      SET status = $2, updated_by = $3, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const { rows } = await this.pool.query(query, [
+      enrollmentId,
+      status,
+      adminId,
+    ]);
+    return rows[0];
+  }
+
+  /**
+   * Fetches all students enrolled in a specific course.
+   * Used for the Enrollment Management table view.
+   */
+  async getStudentsByCourse(courseId: number) {
+    const query = `
+    SELECT 
+      e.id AS enrollment_id,
+      u.id AS student_id,
+      CONCAT(p.first_name, ' ', p.last_name) AS student_name,
+      e.status
+    FROM enrollments e
+    JOIN users u ON e.student_id = u.id
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE e.course_id = $1 
+      AND e.deleted_at IS NULL
+    ORDER BY student_name ASC;
+  `;
+
+    try {
+      const { rows } = await this.pool.query(query, [courseId]);
+      console.log("Fetched students for course:", courseId, rows);
+      return rows;
+    } catch (error) {
+      console.error("Database error in getStudentsByCourse:", error);
+      throw error;
+    }
+  }
+
+  // Inside EnrollmentRepository.ts
+  async getEnrollmentsByCourse(courseId: number) {
+    const query = `
+    SELECT 
+      e.id AS enrollment_id,
+      u.id AS student_id,
+      CONCAT(p.first_name, ' ', p.last_name) AS student_name,
+      e.status
+    FROM enrollments e
+    JOIN users u ON e.student_id = u.id
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE e.course_id = $1 
+    -- Removed e.deleted_at IS NULL because the column doesn't exist
+    ORDER BY student_name ASC;
+  `;
+
+    const { rows } = await this.pool.query(query, [courseId]);
+    return rows;
   }
 }

@@ -5,7 +5,7 @@ import { TYPES } from '../config/types';
 @injectable()
 export class StudentRepository {
   // Inject the database pool directly
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   async getTotalStudentCount(): Promise<number> {
     const queryText = 'SELECT COUNT(*) AS total FROM users';
@@ -13,7 +13,7 @@ export class StudentRepository {
     try {
       const { rows } = await this.pool.query<{ total: string }>(queryText);
       const count = rows[0]?.total ?? '0';
-      return parseInt(count, 10);
+      return Number.parseInt(count, 10);
     } catch (error: any) {
       console.error("Database error:", error);
       throw error;

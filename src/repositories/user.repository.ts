@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 
 @injectable() //Decorator: This marks the AuthController so that the Inversify container can manage its lifecycle and dependencies
 export class UserRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
   // Find a user by email (active users only)
   async findByEmail(email: string) {
     const query = "SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL";

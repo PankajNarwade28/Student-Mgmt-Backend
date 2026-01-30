@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 
 @injectable()
 export class ProfileRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   async getProfileByUserId(userId: string) {
     const query = "SELECT * FROM profiles WHERE user_id = $1";

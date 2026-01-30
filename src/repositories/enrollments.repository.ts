@@ -1,7 +1,9 @@
+import { inject } from "inversify";
 import { Pool } from "pg";
+import { TYPES } from "../config/types";
 
 export class EnrollmentRepository {
-  constructor(private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   // Fetches courses with their current students for the management grid
   async getEnrollmentDetails() {
@@ -37,15 +39,15 @@ export class EnrollmentRepository {
   }
 
   async addEnrollment(studentId: string, courseId: number) {
-  const query = `
+    const query = `
     INSERT INTO enrollments (student_id, course_id, status, enrolled_at)
     VALUES ($1::uuid, $2, 'Active', CURRENT_TIMESTAMP) -- Changed from 'Enrolled' to 'Active'
     ON CONFLICT (student_id, course_id) DO NOTHING
     RETURNING *;
   `;
-  const { rows } = await this.pool.query(query, [studentId, courseId]);
-  return rows[0];
-}
+    const { rows } = await this.pool.query(query, [studentId, courseId]);
+    return rows[0];
+  }
 
   async removeEnrollment(studentId: string, courseId: number) {
     console.log(
@@ -62,4 +64,44 @@ export class EnrollmentRepository {
     const { rows } = await this.pool.query(query, [studentId, courseId]);
     return rows[0];
   }
+
+  /**
+   * Fetches all student enrollment details for a specific course
+   */
+  // Inside EnrollmentRepository.ts
+  async getEnrollmentsByCourse(courseId: number) {
+    const query = `
+    SELECT 
+      e.id AS enrollment_id,
+      u.id AS student_id,
+      CONCAT(p.first_name, ' ', p.last_name) AS student_name,
+      e.status
+    FROM enrollments e
+    JOIN users u ON e.student_id = u.id
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE e.course_id = $1 
+    -- Removed e.deleted_at IS NULL because the column doesn't exist
+    ORDER BY student_name ASC;
+  `;
+
+    const { rows } = await this.pool.query(query, [courseId]);
+    return rows;
+  }
+
+  // Inside EnrollmentRepository.ts
+async updateEnrollmentStatus(enrollmentId: number, status: string, adminId: string) {
+  const query = `
+    UPDATE enrollments 
+    SET 
+      status = $2, 
+      updated_by = $3::UUID, -- Explicitly cast to UUID
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = $1
+    RETURNING *;
+  `;
+
+  // Check your terminal: if adminId is undefined, the query will fail.
+  const { rows } = await this.pool.query(query, [enrollmentId, status, adminId]);
+  return rows[0];
+}
 }
