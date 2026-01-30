@@ -5,7 +5,7 @@ import { inject, injectable } from "@inversifyjs/core";
 
 @injectable()
 export class AuditRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   async getAllLogs() {
     const query = `

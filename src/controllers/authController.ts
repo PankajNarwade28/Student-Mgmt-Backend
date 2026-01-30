@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
-import { ProfileRepository } from "../repositories/profile.repository"; 
+import { ProfileRepository } from "../repositories/profile.repository";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -77,6 +77,45 @@ export class AuthController {
     } catch (error) {
       console.error("Error during registration:", error);
       res.status(500).json({ error: "Registration failed" });
+    }
+  };
+
+  changePassword = async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).user.id;
+      const { oldPassword, newPassword } = req.body;
+
+      // 1. Fetch current hash and status
+      const user = await this.userRepo.findPasswordAndStatusById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      // 2. Verify current password
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Incorrect current password" });
+      }
+
+      // 3. Hash new password
+      const newHash = await bcrypt.hash(newPassword, 10);
+
+      // 4. Update Password
+      await this.userRepo.updatePassword(userId, newHash);
+
+      // 5. Separate logic for Activation: Only update if currently Inactive
+      let activated = false;
+      if (user.is_active === false) {
+        await this.userRepo.updateStatus(userId, true);
+        activated = true;
+      }
+
+      return res.status(200).json({
+        message: activated
+          ? "Password changed and account activated!"
+          : "Password updated successfully.",
+      });
+    } catch (error) {
+      console.error("ChangePassword Error:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   };
 }

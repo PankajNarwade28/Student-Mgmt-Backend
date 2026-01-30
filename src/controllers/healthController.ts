@@ -5,8 +5,8 @@ import { StudentRepository } from "../repositories/student.repository";
 
 @injectable()
 export class HealthController {
-  constructor(
-    @inject(TYPES.StudentRepository) private studentRepo: StudentRepository
+  constructor(  
+    @inject(TYPES.StudentRepository) private readonly studentRepo: StudentRepository
   ) {}
 
   checkHealth = async (req: Request, res: Response, next: NextFunction) => {

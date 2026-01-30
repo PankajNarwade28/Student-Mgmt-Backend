@@ -58,4 +58,24 @@ export class UserRepository {
       throw err; // Send it to controller
     }
   }
+
+  async findPasswordAndStatusById(userId: string) {
+    const query = "SELECT password, is_active FROM users WHERE id = $1 AND deleted_at IS NULL";
+    const result = await this.pool.query(query, [userId]);
+    return result.rows[0];
+  }
+
+  async updatePassword(userId: string, newPasswordHash: string) {
+    const query = `
+      UPDATE users 
+      SET password = $2, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $1
+    `;
+    await this.pool.query(query, [userId, newPasswordHash]);
+  }
+
+  async updateStatus(userId: string, isActive: boolean) {
+    const query = "UPDATE users SET is_active = $2 WHERE id = $1";
+    await this.pool.query(query, [userId, isActive]);
+  }
 }
