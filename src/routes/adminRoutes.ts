@@ -6,136 +6,169 @@ import { authorize } from "../middlewares/access.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { validateAdminAddUser } from "../middlewares/data.validation";
 import { CourseController } from "../controllers/courseController";
+import { RequestController } from "../controllers/requestController";
+import { EnrollmentController } from "../controllers/enrollmentsController";
 import {
   checkCourseAssignments,
   validateCourseData,
 } from "../middlewares/course.validation";
 import { isValidTeacher } from "../middlewares/isValidTeacher.middleware";
 
-import { RequestController } from "../controllers/requestController";
-
-const requestController = container.get<RequestController>(
-  TYPES.RequestController,
-);
-
 const router = express.Router();
 
-// Resolve the controller from the container
+// ---------------------------------------------------------
+// Resolve Controllers from Inversify Container
+// ---------------------------------------------------------
 const adminController = container.get<AdminController>(TYPES.AdminController);
+const courseController = container.get<CourseController>(TYPES.CourseController);
+const requestController = container.get<RequestController>(TYPES.RequestController);
+const enrollmentController = container.get<EnrollmentController>(TYPES.EnrollmentController);
 
-// Define the route
+// ---------------------------------------------------------
+// 1. User Management Routes
+// ---------------------------------------------------------
+
 router.post(
   "/adduser",
   validateAdminAddUser,
   authMiddleware,
   authorize(["Admin"]),
-  adminController.addUser,
+  adminController.addUser
 );
+
 router.get(
   "/users",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getUsers,
+  adminController.getUsers
 );
+
 router.get(
   "/users/directory",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getUserDirectory,
+  adminController.getUserDirectory
 );
 
-// admin.routes.ts
 router.put(
   "/users/:id",
   validateAdminAddUser,
   authMiddleware,
   authorize(["Admin"]),
   checkCourseAssignments,
-  adminController.updateUser,
+  adminController.updateUser
 );
+
 router.delete(
   "/users/:id",
   authMiddleware,
   authorize(["Admin"]),
   checkCourseAssignments,
-  adminController.removeUser,
+  adminController.removeUser
 );
-const courseController = container.get<CourseController>(TYPES.CourseController);
-// Ensure this path matches what you put in the api.get() call above
+
+router.get(
+  "/students",
+  authMiddleware,
+  authorize(["Admin"]),
+  adminController.getAllStudents.bind(adminController)
+);
+
+// ---------------------------------------------------------
+// 2. Course & Teacher Management Routes
+// ---------------------------------------------------------
+
 router.get(
   "/teachers",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.getTeachers.bind(courseController),
+  courseController.getTeachers.bind(courseController)
 );
+
 router.post(
   "/addcourse",
   validateCourseData,
   authMiddleware,
   authorize(["Admin"]),
   isValidTeacher,
-  courseController.addCourse.bind(courseController),
+  courseController.addCourse.bind(courseController)
 );
+
 router.get(
   "/courses",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.getAllCourses.bind(courseController),
+  courseController.getAllCourses.bind(courseController)
 );
-router.delete(
-  "/courses/:id",
-  authMiddleware,
-  authorize(["Admin"]),
-  courseController.deleteCourse.bind(courseController),
-);
-router.patch(
-  "/courses/:id/restore",
-  authMiddleware,
-  authorize(["Admin"]),
-  courseController.restoreCourse.bind(courseController),
-);
+
 router.put(
   "/courses/:id",
   authMiddleware,
   authorize(["Admin"]),
   isValidTeacher,
-  courseController.updateCourse.bind(courseController),
+  courseController.updateCourse.bind(courseController)
 );
-router.get(
-  "/students",
+
+router.delete(
+  "/courses/:id",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getAllStudents.bind(adminController),
+  courseController.deleteCourse.bind(courseController)
 );
+
+router.patch(
+  "/courses/:id/restore",
+  authMiddleware,
+  authorize(["Admin"]),
+  courseController.restoreCourse.bind(courseController)
+);
+
+// ---------------------------------------------------------
+// 3. Enrollment & Enrollment Request Routes
+// ---------------------------------------------------------
 
 router.get(
   "/courses/enrollment-data",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.fetchEnrollmentData.bind(courseController),
+  courseController.fetchEnrollmentData.bind(courseController)
 );
 
 router.use(
   "/courses/enrollments",
   authMiddleware,
   authorize(["Admin"]),
-  require("./enrollmentsRoutes").default,
+  require("./enrollmentsRoutes").default
 );
-// router.get("/requests", requestController.getRequests);
-// router.patch("/requests/:id", requestController.updateRequestStatus);
-// router.delete("/requests/:id", requestController.removeRequest);
-// For your admin request management
-router.get("/requests", requestController.getRequests);
- 
-// src/routes/adminRoutes.ts
 
-// 1. Fetch all detailed requests (Student Name + Course Name)
-router.get("/requests", requestController.getRequests);
+// Fetch all detailed requests (Student Name + Course Name)
+router.get(
+  "/requests",
+  authMiddleware,
+  authorize(["Admin"]),
+  requestController.getRequests
+);
 
-// 2. Handle the decision (Accept/Enroll or Reject/Delete)
-// This replaces updateRequestStatus and removeRequest
-router.post("/requests/:id/decision", requestController.handleDecision);
+// Handle the decision (Accept/Enroll or Reject/Delete)
+router.post(
+  "/requests/:id/decision",
+  authMiddleware,
+  authorize(["Admin"]),
+  requestController.handleDecision
+);
 
-// Note: If you no longer have updateRequestStatus or removeRequest 
-// in your RequestController class, DELETE those lines to fix the TSError.
+// Fetch all students for a specific course (used by EnrollmentStatus.tsx table)
+router.get(
+  "/courses/:courseId/enrollments",
+  authMiddleware,
+  authorize(["Admin"]),
+  enrollmentController.getCourseEnrollments.bind(enrollmentController)
+);
+
+router.patch(
+  "/enrollments/:id/status",
+  authMiddleware,
+  authorize(["Admin"]),
+  enrollmentController.updateEnrollmentStatus.bind(enrollmentController)
+);
 export default router;
