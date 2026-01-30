@@ -196,4 +196,38 @@ export class AdminRepository {
     const { rows } = await this.pool.query(query, [courseId]);
     return rows;
   }
+  // Inside AdminRepository.ts
+
+async getSystemStats() {
+  const query = `
+    SELECT 
+      (SELECT COUNT(*) FROM users WHERE role = 'Student' AND deleted_at IS NULL) as student_count,
+      (SELECT COUNT(*) FROM users WHERE role = 'Teacher' AND deleted_at IS NULL) as teacher_count,
+      (SELECT COUNT(*) FROM courses WHERE deleted_at IS NULL) as course_count,
+      (SELECT 
+          CASE 
+            WHEN COUNT(*) = 0 THEN 0 
+            ELSE ROUND((COUNT(CASE WHEN status = 'Active' THEN 1 END)::numeric / COUNT(*)::numeric) * 100, 1)
+          END 
+       FROM enrollments WHERE deleted_at IS NULL) as enrollment_rate
+  `;
+  const { rows } = await this.pool.query(query);
+  return rows[0];
+}
+
+async getRecentAuditLogs(limit: number = 5) {
+  const query = `
+    SELECT 
+      id, 
+      operation as type, 
+      changed_by as user,
+      table_name as table_name,
+      changed_at as date
+    FROM audit_logs
+    ORDER BY changed_at DESC
+    LIMIT $1
+  `;
+  const { rows } = await this.pool.query(query, [limit]);
+  return rows;
+}
 }

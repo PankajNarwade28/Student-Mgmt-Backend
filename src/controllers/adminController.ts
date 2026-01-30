@@ -130,5 +130,25 @@ export class AdminController {
     }
   };
 
-  
+  // Inside AdminController.ts
+
+getAnalytics = async (req: Request, res: Response) => {
+  try {
+    const stats = await this.adminRepo.getSystemStats();
+    const logs = await this.adminRepo.getRecentAuditLogs(5);
+
+    res.status(200).json({
+      stats: {
+        totalStudents: stats.student_count,
+        activeTeachers: stats.teacher_count,
+        totalCourses: stats.course_count,
+        enrollmentRate: stats.enrollment_rate
+      },
+      recentActivity: logs
+    });
+  } catch (error) {
+    console.error("Analytics Error:", error);
+    res.status(500).json({ message: "Error fetching analytics data" });
+  }
+};
 }
