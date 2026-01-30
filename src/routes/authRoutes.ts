@@ -1,11 +1,9 @@
-import { Router } from 'express';
-// import { signup, login } from '../controllers/authController';
+import { Router } from 'express'; 
 import { TYPES } from '../config/types';
 import { container } from '../config/inversify.config';
 import { AuthController } from '../controllers/authController';
-import { validateLogin, validateSignup } from '../middlewares/auth.middleware';
-import { AdminController } from '../controllers/adminController';
-// import { authorize } from '../middlewares/access.middleware';
+import { authMiddleware, validateLogin, validateSignup } from '../middlewares/auth.middleware';
+import { AdminController } from '../controllers/adminController'; 
 
 const router: Router = Router();
 
@@ -19,6 +17,11 @@ const adminController = container.get<AdminController>(TYPES.AdminController);
 router.post('/login', validateLogin,login);
 // This results in POST /api/auth/signup
 router.post('/signup',validateSignup, signup);
-
+// Inside your auth routes file
+router.patch(
+  "/change-password", 
+  authMiddleware, 
+  authController.changePassword.bind(authController)
+);
 
 export default router;

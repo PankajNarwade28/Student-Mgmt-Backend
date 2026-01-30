@@ -171,4 +171,11 @@ router.patch(
   authorize(["Admin"]),
   enrollmentController.updateEnrollmentStatus.bind(enrollmentController)
 );
+
+router.get(
+  "/analytics/overview", 
+  authMiddleware, 
+  authorize(['Admin']), 
+  adminController.getAnalytics.bind(adminController)
+);
 export default router;
