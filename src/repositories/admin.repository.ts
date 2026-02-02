@@ -42,12 +42,35 @@ export class AdminRepository {
     }
   }
 
-  async getAllUsers() {
-    const query =
-      "SELECT id, email, role, is_active, created_at, updated_at FROM users";
-    const { rows } = await this.pool.query(query);
-    return rows;
-  }
+  // async getAllUsers() {
+  //   const query =
+  //     "SELECT id, email, role, is_active, created_at, updated_at FROM users";
+  //   const { rows } = await this.pool.query(query);
+  //   return rows;
+  // }
+
+  async getAllUsers(limit: number, offset: number) {
+  // Query 1: Fetch the specific page of users
+  const dataQuery = `
+    SELECT id, email, role, is_active, created_at, updated_at 
+    FROM users 
+    ORDER BY created_at DESC 
+    LIMIT $1 OFFSET $2
+  `;
+  
+  // Query 2: Fetch total count to calculate total pages on frontend
+  const countQuery = "SELECT COUNT(*) FROM users";
+
+  const [dataRes, countRes] = await Promise.all([
+    this.pool.query(dataQuery, [limit, offset]),
+    this.pool.query(countQuery)
+  ]);
+
+  return {
+    users: dataRes.rows,
+    totalCount: parseInt(countRes.rows[0].count)
+  };
+}
 
   async updateUser(id: string, email: string, role: string): Promise<any> {
     const query = `

@@ -41,15 +41,42 @@ export class AdminController {
     }
   };
 
+  // getUsers = async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const users = await this.adminRepo.getAllUsers();
+  //     res.status(200).json({ success: true, users });
+  //   } catch (error) {
+  //     console.error("GetUsers Error:", error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // };
+
   getUsers = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const users = await this.adminRepo.getAllUsers();
-      res.status(200).json({ success: true, users });
-    } catch (error) {
-      console.error("GetUsers Error:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  };
+  try {
+    // 1. Get query params (default to page 1, limit 10)
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 5;
+    const offset = (page - 1) * limit;
+
+    // 2. Call repo with pagination arguments
+    const { users, totalCount } = await this.adminRepo.getAllUsers(limit, offset);
+
+    // 3. Return users + pagination metadata
+    res.status(200).json({ 
+      success: true, 
+      users,
+      pagination: {
+        totalUsers: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        limit: limit
+      }
+    });
+  } catch (error) {
+    console.error("GetUsers Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
 
   updateUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -132,23 +159,23 @@ export class AdminController {
 
   // Inside AdminController.ts
 
-getAnalytics = async (req: Request, res: Response) => {
-  try {
-    const stats = await this.adminRepo.getSystemStats();
-    const logs = await this.adminRepo.getRecentAuditLogs(5);
+  getAnalytics = async (req: Request, res: Response) => {
+    try {
+      const stats = await this.adminRepo.getSystemStats();
+      const logs = await this.adminRepo.getRecentAuditLogs(5);
 
-    res.status(200).json({
-      stats: {
-        totalStudents: stats.student_count,
-        activeTeachers: stats.teacher_count,
-        totalCourses: stats.course_count,
-        enrollmentRate: stats.enrollment_rate
-      },
-      recentActivity: logs
-    });
-  } catch (error) {
-    console.error("Analytics Error:", error);
-    res.status(500).json({ message: "Error fetching analytics data" });
-  }
-};
+      res.status(200).json({
+        stats: {
+          totalStudents: stats.student_count,
+          activeTeachers: stats.teacher_count,
+          totalCourses: stats.course_count,
+          enrollmentRate: stats.enrollment_rate,
+        },
+        recentActivity: logs,
+      });
+    } catch (error) {
+      console.error("Analytics Error:", error);
+      res.status(500).json({ message: "Error fetching analytics data" });
+    }
+  };
 }
