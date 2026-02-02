@@ -101,20 +101,46 @@ export class AdminRepository {
   // 2. Student & Profile Management
   // ==========================================
 
-  async getStudentsWithProfiles() {
-    const query = `
-      SELECT 
-        u.id, u.email, u.is_active, u.created_at,
-        p.first_name, p.last_name,
-        CONCAT(p.first_name, ' ', p.last_name) AS full_name
-      FROM users u
-      LEFT JOIN profiles p ON u.id = p.user_id
-      WHERE u.role = 'Student'
-      ORDER BY u.created_at DESC;
-    `;
-    const { rows } = await this.pool.query(query);
-    return rows;
-  }
+  // async getStudentsWithProfiles() {
+  //   const query = `
+  //     SELECT 
+  //       u.id, u.email, u.is_active, u.created_at,
+  //       p.first_name, p.last_name,
+  //       CONCAT(p.first_name, ' ', p.last_name) AS full_name
+  //     FROM users u
+  //     LEFT JOIN profiles p ON u.id = p.user_id
+  //     WHERE u.role = 'Student'
+  //     ORDER BY u.created_at DESC;
+  //   `;
+  //   const { rows } = await this.pool.query(query);
+  //   return rows;
+  // }
+
+  async getStudentsWithProfiles(limit: number, offset: number) {
+  const dataQuery = `
+    SELECT 
+      u.id, u.email, u.is_active, u.created_at,
+      p.first_name, p.last_name,
+      CONCAT(p.first_name, ' ', p.last_name) AS full_name
+    FROM users u
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE u.role = 'Student'
+    ORDER BY u.created_at DESC
+    LIMIT $1 OFFSET $2;
+  `;
+
+  const countQuery = `SELECT COUNT(*) FROM users WHERE role = 'Student'`;
+
+  const [dataRes, countRes] = await Promise.all([
+    this.pool.query(dataQuery, [limit, offset]),
+    this.pool.query(countQuery)
+  ]);
+
+  return {
+    students: dataRes.rows,
+    totalCount: Number.parseInt(countRes.rows[0].count)
+  };
+}
 
   async getStudentStats() {
     const query = `
