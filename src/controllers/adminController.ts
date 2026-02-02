@@ -41,16 +41,7 @@ export class AdminController {
     }
   };
 
-  // getUsers = async (req: Request, res: Response): Promise<void> => {
-  //   try {
-  //     const users = await this.adminRepo.getAllUsers();
-  //     res.status(200).json({ success: true, users });
-  //   } catch (error) {
-  //     console.error("GetUsers Error:", error);
-  //     res.status(500).json({ message: "Internal Server Error" });
-  //   }
-  // };
-
+  
   getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
       // 1. Get query params (default to page 1, limit 10)
@@ -113,31 +104,29 @@ export class AdminController {
   // ==========================================
 
   getUserDirectory = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const userRepository = container.get<UserRepository>(
-        TYPES.UserRepository,
-      );
-      const users = await userRepository.getDetailedUserDirectory();
-      res.status(200).json({ success: true, users });
-    } catch (error: any) {
-      console.error("GetUserDirectory Error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Database error",
-        error: error.message,
-      });
-    }
-  };
+  try {
+    const page = Number.parseInt(req.query.page as string) || 1;
+    const limit = Number.parseInt(req.query.limit as string) || 9;
+    const role = req.query.role as string; // Extract role from query
+    const offset = (page - 1) * limit;
 
-  // getAllStudents = async (req: Request, res: Response) => {
-  //   try {
-  //     const students = await this.adminRepo.getStudentsWithProfiles();
-  //     res.status(200).json(students);
-  //   } catch (error) {
-  //     console.error("Get All Students Error:", error);
-  //     res.status(500).json({ message: "Error fetching students" });
-  //   }
-  // };
+    const userRepository = container.get<UserRepository>(TYPES.UserRepository);
+    const { users, totalCount } = await userRepository.getDetailedUserDirectory(limit, offset, role);
+
+    res.status(200).json({ 
+      success: true, 
+      users,
+      pagination: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page
+      }
+    });
+  } catch (error: unknown) {
+    console.error("Error:",error)
+    res.status(500).json({ success: false, message: "Database error" });
+  }
+};
 
   // ==========================================
   // 3. Enrollment Lifecycle Management
@@ -146,7 +135,7 @@ export class AdminController {
   getAllStudents = async (req: Request, res: Response) => {
     try {
       const page = Number.parseInt(req.query.page as string) || 1;
-      const limit = Number.parseInt(req.query.limit as string) || 10;
+      const limit = Number.parseInt(req.query.limit as string) || 1;
       const offset = (page - 1) * limit;
 
       const { students, totalCount } =
@@ -166,10 +155,12 @@ export class AdminController {
       res.status(500).json({ message: "Error fetching students" });
     }
   };
+
   /**
    * GET /api/admin/courses/:courseId/enrollments
    * Returns student list for the EnrollmentStatus table
    */
+
   getCourseEnrollments = async (req: Request, res: Response): Promise<void> => {
     try {
       const { courseId } = req.params;
