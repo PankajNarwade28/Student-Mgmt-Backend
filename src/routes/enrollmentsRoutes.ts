@@ -12,6 +12,7 @@ import { AdminController } from "../controllers/adminController";
 // Middlewares
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/access.middleware";
+import { validateEnrollment } from "../middlewares/enrollments.middleware";
 
 const router = Router();
 
@@ -41,6 +42,7 @@ router.get(
 // POST: Add a new student to a course
 router.post(
   "/add",
+  validateEnrollment,
   enrollmentController.enrollStudent.bind(enrollmentController),
 );
 

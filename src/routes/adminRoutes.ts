@@ -10,6 +10,7 @@ import { RequestController } from "../controllers/requestController";
 import { EnrollmentController } from "../controllers/enrollmentsController";
 import {
   checkCourseAssignments,
+  checkEnrollmentCount,
   validateCourseData,
 } from "../middlewares/course.validation";
 import { isValidTeacher } from "../middlewares/isValidTeacher.middleware";
@@ -20,9 +21,15 @@ const router = express.Router();
 // Resolve Controllers from Inversify Container
 // ---------------------------------------------------------
 const adminController = container.get<AdminController>(TYPES.AdminController);
-const courseController = container.get<CourseController>(TYPES.CourseController);
-const requestController = container.get<RequestController>(TYPES.RequestController);
-const enrollmentController = container.get<EnrollmentController>(TYPES.EnrollmentController);
+const courseController = container.get<CourseController>(
+  TYPES.CourseController,
+);
+const requestController = container.get<RequestController>(
+  TYPES.RequestController,
+);
+const enrollmentController = container.get<EnrollmentController>(
+  TYPES.EnrollmentController,
+);
 
 // ---------------------------------------------------------
 // 1. User Management Routes
@@ -33,21 +40,21 @@ router.post(
   validateAdminAddUser,
   authMiddleware,
   authorize(["Admin"]),
-  adminController.addUser
+  adminController.addUser,
 );
 
 router.get(
   "/users",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getUsers
+  adminController.getUsers,
 );
 
 router.get(
   "/users/directory",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getUserDirectory
+  adminController.getUserDirectory,
 );
 
 router.put(
@@ -56,7 +63,7 @@ router.put(
   authMiddleware,
   authorize(["Admin"]),
   checkCourseAssignments,
-  adminController.updateUser
+  adminController.updateUser,
 );
 
 router.delete(
@@ -64,14 +71,14 @@ router.delete(
   authMiddleware,
   authorize(["Admin"]),
   checkCourseAssignments,
-  adminController.removeUser
+  adminController.removeUser,
 );
 
 router.get(
   "/students",
   authMiddleware,
   authorize(["Admin"]),
-  adminController.getAllStudents.bind(adminController)
+  adminController.getAllStudents.bind(adminController),
 );
 
 // ---------------------------------------------------------
@@ -82,7 +89,7 @@ router.get(
   "/teachers",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.getTeachers.bind(courseController)
+  courseController.getTeachers.bind(courseController),
 );
 
 router.post(
@@ -91,14 +98,14 @@ router.post(
   authMiddleware,
   authorize(["Admin"]),
   isValidTeacher,
-  courseController.addCourse.bind(courseController)
+  courseController.addCourse.bind(courseController),
 );
 
 router.get(
   "/courses",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.getAllCourses.bind(courseController)
+  courseController.getAllCourses.bind(courseController),
 );
 
 router.put(
@@ -106,21 +113,22 @@ router.put(
   authMiddleware,
   authorize(["Admin"]),
   isValidTeacher,
-  courseController.updateCourse.bind(courseController)
+  courseController.updateCourse.bind(courseController),
 );
 
 router.delete(
   "/courses/:id",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.deleteCourse.bind(courseController)
+  checkEnrollmentCount(),
+  courseController.deleteCourse.bind(courseController),
 );
 
 router.patch(
   "/courses/:id/restore",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.restoreCourse.bind(courseController)
+  courseController.restoreCourse.bind(courseController),
 );
 
 // ---------------------------------------------------------
@@ -131,14 +139,14 @@ router.get(
   "/courses/enrollment-data",
   authMiddleware,
   authorize(["Admin"]),
-  courseController.fetchEnrollmentData.bind(courseController)
+  courseController.fetchEnrollmentData.bind(courseController),
 );
 
 router.use(
   "/courses/enrollments",
   authMiddleware,
   authorize(["Admin"]),
-  require("./enrollmentsRoutes").default
+  require("./enrollmentsRoutes").default,
 );
 
 // Fetch all detailed requests (Student Name + Course Name)
@@ -146,7 +154,7 @@ router.get(
   "/requests",
   authMiddleware,
   authorize(["Admin"]),
-  requestController.getRequests
+  requestController.getRequests,
 );
 
 // Handle the decision (Accept/Enroll or Reject/Delete)
@@ -154,7 +162,7 @@ router.post(
   "/requests/:id/decision",
   authMiddleware,
   authorize(["Admin"]),
-  requestController.handleDecision
+  requestController.handleDecision,
 );
 
 // Fetch all students for a specific course (used by EnrollmentStatus.tsx table)
@@ -162,20 +170,20 @@ router.get(
   "/courses/:courseId/enrollments",
   authMiddleware,
   authorize(["Admin"]),
-  enrollmentController.getCourseEnrollments.bind(enrollmentController)
+  enrollmentController.getCourseEnrollments.bind(enrollmentController),
 );
 
 router.patch(
   "/enrollments/:id/status",
   authMiddleware,
   authorize(["Admin"]),
-  enrollmentController.updateEnrollmentStatus.bind(enrollmentController)
+  enrollmentController.updateEnrollmentStatus.bind(enrollmentController),
 );
 
 router.get(
-  "/analytics/overview", 
-  authMiddleware, 
-  authorize(['Admin']), 
-  adminController.getAnalytics.bind(adminController)
+  "/analytics/overview",
+  authMiddleware,
+  authorize(["Admin"]),
+  adminController.getAnalytics.bind(adminController),
 );
 export default router;
