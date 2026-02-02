@@ -12,14 +12,14 @@ export class RequestController {
     private readonly requestRepo: RequestRepository,
   ) {}
 
-  getRequests = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const data = await this.requestRepo.getAllDetailedRequests();
-      res.json(data);
-    } catch (err) {
-      next(err);
-    }
-  };
+  // getRequests = async (req: Request, res: Response, next: NextFunction) => {
+  //   try {
+  //     const data = await this.requestRepo.getAllDetailedRequests();
+  //     res.json(data);
+  //   } catch (err) {
+  //     next(err);
+  //   }
+  // };
 
   // handleDecision = async (req: Request, res: Response, next: NextFunction) => {
   //   try {
@@ -43,6 +43,29 @@ export class RequestController {
   // };
 
   // src/controllers/request.controller.ts
+
+  getRequests = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = Number.parseInt(req.query.page as string) || 1;
+    const limit = Number.parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
+    const { requests, totalCount } = await this.requestRepo.getAllDetailedRequests(limit, offset);
+
+    res.status(200).json({
+      success: true,
+      requests,
+      pagination: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        limit: limit
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
   handleDecision = async (req: Request, res: Response, next: NextFunction) => {
     try {
