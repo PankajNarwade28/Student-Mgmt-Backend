@@ -8,7 +8,7 @@ import { TYPES } from "../config/types";
 @injectable()
 export class ProfileController {
   constructor(
-    @inject(TYPES.ProfileRepository) private profileRepo: ProfileRepository
+    @inject(TYPES.ProfileRepository) private readonly profileRepo: ProfileRepository
   ) {}
 
   // Added this method to handle: api.get("/api/user/profile")

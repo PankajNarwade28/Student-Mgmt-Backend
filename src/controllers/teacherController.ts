@@ -91,21 +91,22 @@ export class TeacherController {
     }
   };
 
-removeAnnouncement = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const result = await this.repository.deleteAnnouncement(id as string | number);
-    console.log("Delete result:", result);
-    
-    if (!result) {
-      return res.status(404).json({ message: "Announcement not found" });
+  removeAnnouncement = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const result = await this.repository.deleteAnnouncement(
+        id as string | number,
+      );
+      console.log("Delete result:", result);
+
+      if (!result) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+
+      res.status(200).json({ message: "Deleted successfully" });
+    } catch (error: unknown) {
+      console.error("Error deleting announcement:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-    
-    res.status(200).json({ message: "Deleted successfully" });
-  } catch (error: unknown) {
-    console.error("Error deleting announcement:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-  
+  };
 }

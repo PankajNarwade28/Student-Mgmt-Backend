@@ -134,20 +134,24 @@ export class EnrollmentController {
    */
 
   // Inside EnrollmentController.ts
-updateEnrollmentStatus = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const adminId = (req as any).user.id;
+  updateEnrollmentStatus = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const adminId = (req as any).user.id;
 
-    console.log("DEBUG: Data received:", { id, status, adminId });
+      console.log("DEBUG: Data received:", { id, status, adminId });
 
-    const updated = await this.repository.updateEnrollmentStatus(Number(id), status, adminId);
-    res.status(200).json(updated);
-  } catch (error: any) {
-    // THIS LINE IS CRITICAL: Look at your terminal output now!
-    console.error("BACKEND CRASH LOG:", error.message); 
-    res.status(500).json({ message: "Update failed", error: error.message });
-  }
-};
+      const updated = await this.repository.updateEnrollmentStatus(
+        Number(id),
+        status,
+        adminId,
+      );
+      res.status(200).json(updated);
+    } catch (error: any) {
+      // THIS LINE IS CRITICAL: Look at your terminal output now!
+      console.error("BACKEND CRASH LOG:", error.message);
+      res.status(500).json({ message: "Update failed", error: error.message });
+    }
+  };
 }
