@@ -60,4 +60,11 @@ export class EmailRepository {
   `;
     await this.pool.query(query, [hashedPass, userId]);
   }
+  // Update Status from Inactive to Active for first update password
+
+  async updateStatus(userId: string, isActive: boolean) {
+    const query = "UPDATE users SET is_active = $2 WHERE id = $1";
+
+    await this.pool.query(query, [userId, isActive]);
+  }
 }
