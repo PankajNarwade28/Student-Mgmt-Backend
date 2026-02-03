@@ -1,10 +1,13 @@
+import { EmailController } from "../controllers/emailController";
+import { EmailRepository } from "../repositories/email.repository";
+
 export const TYPES = {
   // 1. Infrastructure
   DbPool: Symbol.for("DbPool"),
 
   // 2. Identity & Access (Auth & Users)
-  UserRepository: Symbol.for('UserRepository'),
-  AuthController: Symbol.for('AuthController'),
+  UserRepository: Symbol.for("UserRepository"),
+  AuthController: Symbol.for("AuthController"),
   ProfileRepository: Symbol.for("ProfileRepository"),
   ProfileController: Symbol.for("ProfileController"),
 
@@ -19,7 +22,7 @@ export const TYPES = {
   CourseRepository: Symbol.for("CourseRepository"),
   TeacherRepository: Symbol.for("TeacherRepository"),
   TeacherController: Symbol.for("TeacherController"),
-  StudentRepository: Symbol.for('StudentRepository'),
+  StudentRepository: Symbol.for("StudentRepository"),
 
   // 5. Enrollment & Lifecycle
   RequestRepository: Symbol.for("RequestRepository"),
@@ -28,8 +31,10 @@ export const TYPES = {
   EnrollmentController: Symbol.for("EnrollmentController"),
 
   // 6. Miscellaneous / Specialized
-  HealthRepository: Symbol.for('HealthRepository'),
-  HealthController: Symbol.for('HealthController'),
+  HealthRepository: Symbol.for("HealthRepository"),
+  HealthController: Symbol.for("HealthController"),
+  EmailController: Symbol.for("EmailController"),
+  EmailRepository: Symbol.for("EmailRepository"),
 };
 
 export type TYPES = typeof TYPES;

@@ -8,7 +8,12 @@ export class ProfileRepository {
   constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   async getProfileByUserId(userId: string) {
-    const query = "SELECT * FROM profiles WHERE user_id = $1";
+    const query = `
+    SELECT p.*, u.email 
+    FROM profiles p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = $1
+  `;
     const { rows } = await this.pool.query(query, [userId]);
     return rows[0];
   }

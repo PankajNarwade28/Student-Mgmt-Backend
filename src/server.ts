@@ -60,8 +60,11 @@ app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
 
 // User Routes with auth middleware
 const userRoutes = require('./routes/userRoutes').default;
-app.use('/api/user', authMiddleware, userRoutes );
-import courseRoutes from './routes/courseRoutes';
+import emailRoutes from './routes/emailRoutes';
+app.use('/api/email',emailRoutes)
+
+app.use('/api/user', authMiddleware, userRoutes);
+import courseRoutes from './routes/courseRoutes';  
 app.use('/api/courses',authMiddleware,  courseRoutes ); 
 app.use('/api/audit', authMiddleware, require('./routes/auditRoutes').default);
 app.use('/api/teacher', authMiddleware, require('./routes/teacherRoutes').default);

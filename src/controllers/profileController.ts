@@ -20,6 +20,7 @@ export class ProfileController {
       const profile = await this.profileRepo.getProfileByUserId(userId);
       return res.status(200).json({ profile: profile || null });
     } catch (error) {
+      console.error(`error`,error)
       return res.status(500).json({ message: "Internal Server Error" });
     }
   }
