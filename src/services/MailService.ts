@@ -40,7 +40,19 @@ export class MailService {
             <!-- Body -->
             <tr>
               <td style="padding:28px;">
-                <h2 style="margin-top:0; color:#111827;">Hello 👋 <span style="color:#4f46e5; font-weight:600;">${email}</span></h2>
+                <h2 style="margin-top:0; color:#111827;">Hello 👋 <span style="
+    display:inline-block;
+    margin-left:6px;
+    padding:4px 10px;
+    background:#eef2ff;
+    color:#4338ca;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    vertical-align:middle;
+  ">
+    ${email}
+  </span></h2>
                 <p style="color:#374151; line-height:1.6;">
                   We received a request to reset your account password.  
                   Click the button below to create a new password and regain access.
