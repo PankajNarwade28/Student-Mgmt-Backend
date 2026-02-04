@@ -2,14 +2,13 @@
 // services/MailService.ts
 import nodemailer from 'nodemailer';
 import { injectable } from 'inversify';
-import 'dotenv/config';
-// const link = process.env.FRONTEND_URL || 'http://localhost:5173';
+import 'dotenv/config'; 
 
 @injectable()
 export class MailService {
     private readonly transporter = nodemailer.createTransport({
         service: 'gmail', // or your provider
-        auth: { user: "pankajnarwade.work@gmail.com", pass: "cmse gqyy wpfb cgno" }
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
     });
 
     async sendResetEmail(email: string, link: string) {
