@@ -1,14 +1,13 @@
 import "reflect-metadata"; 
 import * as dotenv from "dotenv";
-import path from 'path';
+import path from 'node:path';
 
 // 1. THIS MUST BE FIRST - Before any repositories or routes are imported
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 // STEP 2: NOW IMPORT EVERYTHING ELSE
 import express from "express";
 import type { Request, Response, NextFunction, Application } from "express"; 
-import cors from "cors";
-import { StudentRepository } from './repositories/student.repository';
+import cors from "cors"; 
 import { HealthRepository } from './repositories/health.repository';
 import authRoutes from "./routes/authRoutes";
 import { authorize } from "./middlewares/access.middleware";
@@ -93,8 +92,7 @@ app.use((req, res) => {
 
 
 // 4. Start Server
-app.listen(PORT, () => {
-    // console.log(`[server]: Server is running at http://localhost:${PORT}`); //use env
+app.listen(PORT, () => { 
     console.log(`[server]: Server is running at ${process.env.BASE_URL}:${PORT}`);
     console.log(`[server]: Mode: ${process.env.NODE_ENV || 'development'}`);
 });
