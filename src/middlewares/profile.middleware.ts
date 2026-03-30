@@ -3,10 +3,10 @@ import { Request, Response, NextFunction } from "express";
 
 export const upsertProfileSchema = z.object({
   // user_id often comes from req.user (JWT), but if it's in the body:
-  user_id: z.string().uuid("Invalid User ID format"), 
+  user_id: z.uuid("Invalid User ID format"), 
   first_name: z.string().min(2, "First name is too short"),
   last_name: z.string().min(2, "Last name is too short"),
-  date_of_birth: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  date_of_birth: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
     message: "Invalid date format",
   }),
   phone_number: z.string().regex(/^\d{10}$/, "Phone number must be 10 digits"),
