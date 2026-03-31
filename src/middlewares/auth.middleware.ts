@@ -8,7 +8,7 @@ export const validateSignup = (req: Request, res: Response, next: NextFunction) 
   const errors: string[] = [];
 
   // 1. Check Email
-  if (!email || !email.includes('@')) {
+  if (!email?.includes('@')) {
     errors.push("A valid email is required.");
   }
 
@@ -71,7 +71,7 @@ export const validateLogin = (
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // 1. Get token from Headers
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1]; // Extracts 'token' from 'Bearer token'
+  const token = authHeader?.split(' ')[1]; // Extracts 'token' from 'Bearer token'
 
   if (!token) {
     return res.status(401).json({ message: "Authentication token missing" });

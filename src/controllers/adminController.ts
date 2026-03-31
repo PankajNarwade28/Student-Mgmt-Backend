@@ -8,7 +8,8 @@ import { container } from "../config/inversify.config";
 @injectable()
 export class AdminController {
   constructor(
-    @inject(TYPES.AdminRepository) private readonly adminRepo: AdminRepository,
+    @inject(TYPES.AdminRepository) private readonly adminRepo: AdminRepository, 
+
   ) {}
 
   // ==========================================
@@ -45,8 +46,8 @@ export class AdminController {
   getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
       // 1. Get query params (default to page 1, limit 10)
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 5;
+      const page = Number.parseInt(req.query.page as string) || 1;
+      const limit = Number.parseInt(req.query.limit as string) || 5;
       const offset = (page - 1) * limit;
 
       // 2. Call repo with pagination arguments

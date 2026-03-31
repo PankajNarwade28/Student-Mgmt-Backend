@@ -68,7 +68,7 @@ export class AdminRepository {
 
   return {
     users: dataRes.rows,
-    totalCount: parseInt(countRes.rows[0].count)
+    totalCount: Number.parseInt(countRes.rows[0].count)
   };
 }
 

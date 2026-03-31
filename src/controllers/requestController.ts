@@ -12,38 +12,7 @@ export class RequestController {
     private readonly requestRepo: RequestRepository,
   ) {}
 
-  // getRequests = async (req: Request, res: Response, next: NextFunction) => {
-  //   try {
-  //     const data = await this.requestRepo.getAllDetailedRequests();
-  //     res.json(data);
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // };
-
-  // handleDecision = async (req: Request, res: Response, next: NextFunction) => {
-  //   try {
-  //     const { id } = req.params;
-  //     const { action, student_id, course_id } = req.body;
-
-  //     if (action === "ACCEPT") {
-  //       await this.requestRepo.acceptAndEnroll(
-  //         Number(id),
-  //         student_id,
-  //         course_id,
-  //       );
-  //       res.json({ message: "Student enrolled and request cleared" });
-  //     } else {
-  //       await this.requestRepo.rejectAndDelete(Number(id));
-  //       res.json({ message: "Request rejected successfully" });
-  //     }
-  //   } catch (err) {
-  //     next(err);
-  //   }
-  // };
-
-  // src/controllers/request.controller.ts
-
+  
   getRequests = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1;

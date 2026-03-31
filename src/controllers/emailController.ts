@@ -59,19 +59,19 @@ export class EmailController {
       await this.emailRepository.updatePassword(user.id, hashedPassword);
 
       // 3. Conditional Activation and Messaging
-      if (!user.is_active) {
+      if (user.is_active) {
+        // User was already active, just a normal password reset
+        return res.status(200).json({
+          message:
+            "Your password has been updated successfully. Please login with your new credentials.",
+        });
+      } else {
         // First time setting password / Account was inactive
         await this.emailRepository.updateStatus(user.id, true);
 
         return res.status(200).json({
           message:
             "Password reset and account activated successfully. You can now login.",
-        });
-      } else {
-        // User was already active, just a normal password reset
-        return res.status(200).json({
-          message:
-            "Your password has been updated successfully. Please login with your new credentials.",
         });
       }
     } catch (error) {

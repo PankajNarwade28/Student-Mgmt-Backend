@@ -1,5 +1,4 @@
-import { EmailController } from "../controllers/emailController";
-import { EmailRepository } from "../repositories/email.repository";
+ 
 
 export const TYPES = {
   // 1. Infrastructure

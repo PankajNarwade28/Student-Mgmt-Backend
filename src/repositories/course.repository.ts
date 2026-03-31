@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 
 @injectable()
 export class CourseRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   // Fetch only active teachers for the dropdown
   async getActiveTeachers() {
@@ -42,7 +42,7 @@ export class CourseRepository {
   async getCourseCountByTeacher(teacherId: string): Promise<number> {
     const query = `SELECT COUNT(*) FROM courses WHERE teacher_id = $1 AND deleted_at IS NULL`;
     const { rows } = await this.pool.query(query, [teacherId]);
-    return parseInt(rows[0].count);
+    return Number.parseInt(rows[0].count);
   }
 
   // For Teachers/Admins: Get all active courses

@@ -58,6 +58,7 @@ export class CourseController {
         course: updatedCourse,
       });
     } catch (error) {
+      console.error("Update Course error:", error);
       return res.status(500).json({ message: "Failed to update course" });
     }
   };
@@ -68,6 +69,7 @@ export class CourseController {
       await this.repository.deleteCourse(Number(id));
       return res.status(200).json({ message: "Course archived successfully" });
     } catch (error) {
+      console.error("Delete Course error:", error);
       return res.status(500).json({ message: "Failed to delete course" });
     }
   };
@@ -78,6 +80,7 @@ export class CourseController {
       await this.repository.restoreCourse(Number(id));
       return res.status(200).json({ message: "Course restored successfully" });
     } catch (error) {
+      console.error("Restore Course error:", error);
       return res.status(500).json({ message: "Failed to restore course" });
     }
   };
@@ -91,6 +94,7 @@ export class CourseController {
       const teachers = await this.repository.getActiveTeachers();
       return res.status(200).json(teachers);
     } catch (error) {
+      console.error("Error fetching teachers:", error);
       return res.status(500).json({ message: "Failed to fetch teachers" });
     }
   };
@@ -100,6 +104,7 @@ export class CourseController {
       const instructors = await this.repository.getAllInstructorsWithCourses();
       res.status(200).json(instructors);
     } catch (error) {
+      console.error("Error fetching instructor directory:", error);
       res.status(500).json({ message: "Failed to fetch instructor directory" });
     }
   };
@@ -109,6 +114,7 @@ export class CourseController {
       const courses = await this.repository.getAllAvailableCourses();
       res.status(200).json(courses);
     } catch (error) {
+      console.error("Error fetching available courses:", error);
       res.status(500).json({ message: "Failed to fetch courses" });
     }
   };
@@ -139,6 +145,7 @@ export class CourseController {
         return res.json(courses);
       }
     } catch (error) {
+      console.error("Error fetching curriculum data:", error);
       res.status(500).json({ message: "Error fetching curriculum data" });
     }
   };
@@ -155,6 +162,7 @@ export class CourseController {
       ]);
       res.status(200).json({ courses, students });
     } catch (error) {
+      console.error("Error fetching enrollment data:", error);
       res.status(500).json({ message: "Error fetching enrollment data" });
     }
   };
@@ -173,6 +181,7 @@ export class CourseController {
 
       res.status(201).json({ success: true, message: "Request submitted successfully" });
     } catch (error) {
+      console.error("Error handling enrollment request:", error);
       res.status(500).json({ message: "Server error handling enrollment request" });
     }
   };

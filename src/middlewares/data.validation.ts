@@ -6,7 +6,7 @@ export const validateAdminAddUser = (req: Request, res: Response, next: NextFunc
   const errors: string[] = [];
 
   // 1. Check Email - Normalize to lowercase for consistency
-  if (!email || !email.includes('@')) {
+  if (!email?.includes('@')) {
     errors.push("A valid email is required.");
   }
 
