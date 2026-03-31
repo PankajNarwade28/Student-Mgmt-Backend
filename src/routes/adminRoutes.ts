@@ -186,4 +186,14 @@ router.get(
   authorize(["Admin"]),
   adminController.getAnalytics.bind(adminController),
 );
+
+router.post("/fees/update", authMiddleware, authorize(["Admin"]), courseController.updateFee.bind(courseController));
+// Route to fetch courses and their current prices
+// authorize(["Admin"]) ensures only authorized roles see financial data [cite: 17, 29]
+router.get(
+  "/courses-with-fees", 
+  authMiddleware, 
+  authorize(["Admin"]), 
+  courseController.getCoursesWithFees.bind(courseController)
+);
 export default router;

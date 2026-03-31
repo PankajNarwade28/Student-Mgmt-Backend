@@ -185,4 +185,41 @@ export class CourseController {
       res.status(500).json({ message: "Server error handling enrollment request" });
     }
   };
+
+
+    // ==========================================
+  // 5. Fees Management
+  // ==========================================
+
+  updateFee = async (req: Request, res: Response) => {
+  try {
+    const { courseId, amount } = req.body;  
+    
+    // Call repository to handle the raw SQL logic
+    const updatedFee = await this.repository.updateCourseFee(courseId, amount); 
+
+    return res.status(200).json({  
+      message: "Course fee updated successfully",
+      fee: updatedFee,
+    });
+  } catch (error) {
+    console.error("Update Fee error:", error);  
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+getCoursesWithFees = async (req: Request, res: Response) => {
+  try {
+    // Single responsibility: Fetching the joined data from repository
+    const data = await this.repository.getCoursesWithFees();
+    
+    return res.status(200).json(data); // [cite: 45]
+  } catch (error) {
+    console.error("Controller Error:", error);  
+    return res.status(500).json({ 
+      message: "Internal server error while fetching fee structure" 
+    });
+  }
+};
+
 }
