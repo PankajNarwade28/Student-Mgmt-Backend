@@ -13,7 +13,8 @@ interface IUpdateCourseRequest {
 @injectable()
 export class CourseController {
   constructor(
-    @inject(TYPES.CourseRepository) private readonly repository: CourseRepository,
+    @inject(TYPES.CourseRepository)
+    private readonly repository: CourseRepository,
   ) {}
 
   // ==========================================
@@ -47,7 +48,10 @@ export class CourseController {
     try {
       const { id } = req.params;
       const updateData: IUpdateCourseRequest = req.body;
-      const updatedCourse = await this.repository.updateCourse(Number(id), updateData);
+      const updatedCourse = await this.repository.updateCourse(
+        Number(id),
+        updateData,
+      );
 
       if (!updatedCourse) {
         return res.status(404).json({ message: "Course not found" });
@@ -172,54 +176,65 @@ export class CourseController {
       const { courseId } = req.body;
       const studentId = (req as any).user.id;
 
-      if (!courseId) return res.status(400).json({ message: "Course ID is required" });
+      if (!courseId)
+        return res.status(400).json({ message: "Course ID is required" });
 
-      const result = await this.repository.requestEnrollment(studentId, courseId);
+      const result = await this.repository.requestEnrollment(
+        studentId,
+        courseId,
+      );
       if (!result) {
-        return res.status(409).json({ message: "Enrollment request already exists." });
+        return res
+          .status(409)
+          .json({ message: "Enrollment request already exists." });
       }
 
-      res.status(201).json({ success: true, message: "Request submitted successfully" });
+      res
+        .status(201)
+        .json({ success: true, message: "Request submitted successfully" });
     } catch (error) {
       console.error("Error handling enrollment request:", error);
-      res.status(500).json({ message: "Server error handling enrollment request" });
+      res
+        .status(500)
+        .json({ message: "Server error handling enrollment request" });
     }
   };
 
-
-    // ==========================================
+  // ==========================================
   // 5. Fees Management
   // ==========================================
 
   updateFee = async (req: Request, res: Response) => {
-  try {
-    const { courseId, amount } = req.body;  
-    
-    // Call repository to handle the raw SQL logic
-    const updatedFee = await this.repository.updateCourseFee(courseId, amount); 
+    try {
+      const { courseId, amount } = req.body;
 
-    return res.status(200).json({  
-      message: "Course fee updated successfully",
-      fee: updatedFee,
-    });
-  } catch (error) {
-    console.error("Update Fee error:", error);  
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
+      // Call repository to handle the raw SQL logic
+      const updatedFee = await this.repository.updateCourseFee(
+        courseId,
+        amount,
+      );
 
-getCoursesWithFees = async (req: Request, res: Response) => {
-  try {
-    // Single responsibility: Fetching the joined data from repository
-    const data = await this.repository.getCoursesWithFees();
-    
-    return res.status(200).json(data); // [cite: 45]
-  } catch (error) {
-    console.error("Controller Error:", error);  
-    return res.status(500).json({ 
-      message: "Internal server error while fetching fee structure" 
-    });
-  }
-};
+      return res.status(200).json({
+        message: "Course fee updated successfully",
+        fee: updatedFee,
+      });
+    } catch (error) {
+      console.error("Update Fee error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  };
 
+  getCoursesWithFees = async (req: Request, res: Response) => {
+    try {
+      // Single responsibility: Fetching the joined data from repository
+      const data = await this.repository.getCoursesWithFees();
+
+      return res.status(200).json(data); // [cite: 45]
+    } catch (error) {
+      console.error("Controller Error:", error);
+      return res.status(500).json({
+        message: "Internal server error while fetching fee structure",
+      });
+    }
+  };
 }

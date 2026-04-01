@@ -79,37 +79,43 @@ export const checkCourseAssignments = async (
     });
   }
 };
-
 export const checkEnrollmentCount = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const pool = container.get<any>(TYPES.DbPool);
+
     try {
-      // Count active enrollments for this student
+      // 1. FORCE ID TO INTEGER
+      const courseId = Number.parseInt(id as string, 10);
+      
+      if (Number.isNaN(courseId)) {
+        return res.status(400).json({ success: false, message: "Invalid Course ID format" });
+      }
+
+      // 2. Query with explicit number
       const query = `
         SELECT COUNT(*) 
         FROM enrollments 
-        WHERE student_id = $1
+        WHERE course_id = $1
       `;
 
-      const result = await pool.query(query, [id]);
-      const enrollmentCount = Number.parseInt(result.rows[0].count);
+      const result = await pool.query(query, [courseId]); // Use the parsed number
+      const enrollmentCount = Number.parseInt(result.rows[0].count, 10);
 
-      // If more than 1 course is assigned, restrict the action
-      if (enrollmentCount > 1) {
-        return res.status(403).json({
+      // 3. Logic Check
+      // If enrollmentCount > 0, we STOP the deletion to protect data integrity
+      if (enrollmentCount > 0) {
+        return res.status(409).json({
           success: false,
-          message: `Action restricted: Student is currently enrolled in ${enrollmentCount} courses. Please unenroll them from courses before deleting or changing their role.`,
+          message: `Cannot delete course: ${enrollmentCount} students are currently enrolled.`,
         });
       }
 
-      // If 1 or 0 courses, proceed to the controller
       next();
     } catch (error) {
       console.error("Enrollment check error:", error);
-      res
-        .status(500)
-        .json({ message: "Internal Server Error during security check." });
+      // If this 500 is sent, your frontend might be logging you out
+      res.status(500).json({ success: false, message: "Database error during safety check." });
     }
   };
 };

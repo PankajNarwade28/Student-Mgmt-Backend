@@ -257,8 +257,7 @@ export class AdminRepository {
               WHEN COUNT(*) = 0 THEN 0 
               ELSE ROUND((COUNT(CASE WHEN status = 'Active' THEN 1 END)::numeric / COUNT(*)::numeric) * 100, 1)
             END 
-        FROM enrollments WHERE deleted_at IS NULL) as enrollment_rate
-  `;
+        FROM enrollments WHERE deleted_at IS NULL) as enrollment_rate`;
     const { rows } = await this.pool.query(query);
     return rows[0];
   }
