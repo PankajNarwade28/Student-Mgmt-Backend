@@ -34,6 +34,11 @@ export const TYPES = {
   HealthController: Symbol.for("HealthController"),
   EmailController: Symbol.for("EmailController"),
   EmailRepository: Symbol.for("EmailRepository"),
+  
+// 7. Fees & Payments
+  FeeRepository: Symbol.for("FeeRepository"),
+  FeeController: Symbol.for("FeeController"),
+
 };
 
 export type TYPES = typeof TYPES;

@@ -67,6 +67,7 @@ import courseRoutes from './routes/courseRoutes';
 app.use('/api/courses',authMiddleware,  courseRoutes ); 
 app.use('/api/audit', authMiddleware, require('./routes/auditRoutes').default);
 app.use('/api/teacher', authMiddleware, require('./routes/teacherRoutes').default);
+app.use('/api/student', authMiddleware, require('./routes/feesRoutes').default);
 
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);

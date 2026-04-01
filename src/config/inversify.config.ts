@@ -27,6 +27,8 @@ import { EnrollmentController } from "../controllers/enrollmentsController";
 import { EmailController } from "../controllers/emailController";
 import { EmailRepository } from "../repositories/email.repository";
 import { MailService } from "../services/MailService";
+import { FeeController } from "../controllers/feeController";
+import { FeeRepository } from "../repositories/fee.repository";
 
 const container = new Container();
 
@@ -118,4 +120,11 @@ container
 
 // Services (If not using a Symbol for MailService)
 container.bind<MailService>(MailService).toSelf().inSingletonScope();
+
+// Fees & Payments
+container.bind<FeeRepository>(TYPES.FeeRepository).to(FeeRepository).inSingletonScope();
+container.bind<FeeController>(TYPES.FeeController).to(FeeController).inSingletonScope();
+
+container.bind<FeeRepository>(FeeRepository).toSelf();
+container.bind<FeeController>(FeeController).toSelf();
 export { container };
