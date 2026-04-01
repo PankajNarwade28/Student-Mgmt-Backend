@@ -2,7 +2,8 @@ import { Pool } from "pg";
 import bcrypt from "bcrypt";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../config/types";
-
+import dotenv from "dotenv";
+dotenv.config();
 @injectable()
 export class AdminRepository {
   constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
@@ -18,8 +19,11 @@ export class AdminRepository {
   }
 
   async createUser(email: string, role: string): Promise<any> {
-    const defaultPassword =
-      role.toLowerCase() === "teacher" ? "Teacher@2026" : "Student@2026";
+    const defaultPassword = 
+      role.toLowerCase() === "teacher"
+        ? process.env.DEFAULT_TEACHER_PASSWORD || "Teacher@2026"
+        : process.env.DEFAULT_STUDENT_PASSWORD || "Student@2026"; 
+        
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     const query = `
