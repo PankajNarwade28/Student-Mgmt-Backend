@@ -50,5 +50,11 @@ feeRouter.post(
   feeController.processPayment.bind(feeController)
 );
 
- 
+// Only Admins should see the full transaction history
+feeRouter.get(
+  '/admin/transactions',
+  authMiddleware,
+  authorize(["Admin"]),
+  feeController.getAllLogs.bind(feeController)
+);
 export default feeRouter;
