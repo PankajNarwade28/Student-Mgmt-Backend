@@ -1,6 +1,6 @@
-import { Pool } from 'pg';
-import { injectable, inject } from 'inversify';
-import { TYPES } from '../config/types';
+import { Pool } from "pg";
+import { injectable, inject } from "inversify";
+import { TYPES } from "../config/types";
 
 @injectable()
 export class FeeRepository {
@@ -8,13 +8,13 @@ export class FeeRepository {
 
   // async getStudentEnrollmentFees(studentId: string) {
   //   const query = `
-  //     SELECT 
+  //     SELECT
   //       e.id AS enrollment_id,
   //       c.name AS course_name,
   //       cf.base_amount AS total_fee,
-  //       CASE 
-  //         WHEN sp.status = 'Paid' THEN 'Paid' 
-  //         ELSE 'Pending' 
+  //       CASE
+  //         WHEN sp.status = 'Paid' THEN 'Paid'
+  //         ELSE 'Pending'
   //       END AS payment_status
   //     FROM enrollments e
   //     JOIN courses c ON e.course_id = c.id
@@ -28,8 +28,8 @@ export class FeeRepository {
 
   // FeeRepository.ts
 
-async getAllTransactions() {
-  const query = `
+  async getAllTransactions() {
+    const query = `
     SELECT 
       sp.razorpay_payment_id AS id,
       u.email AS student_email, -- Or u.name if you have a name column
@@ -43,18 +43,18 @@ async getAllTransactions() {
     JOIN courses c ON e.course_id = c.id
     ORDER BY sp.payment_date DESC;
   `;
-  const result = await this.pool.query(query);
-  return result.rows;
-}
+    const result = await this.pool.query(query);
+    return result.rows;
+  }
 
- async recordPayment(
-  enrollmentId: number, 
-  amount: number, 
-  orderId: string, 
-  paymentId: string, 
-  signature: string
-) {
-  const query = `
+  async recordPayment(
+    enrollmentId: number,
+    amount: number,
+    orderId: string,
+    paymentId: string,
+    signature: string,
+  ) {
+    const query = `
     INSERT INTO student_payments 
       (enrollment_id, amount_paid, razorpay_order_id, razorpay_payment_id, razorpay_signature, status)
     VALUES 
@@ -68,13 +68,17 @@ async getAllTransactions() {
       payment_date = CURRENT_TIMESTAMP
     RETURNING *;
   `;
-  const values = [enrollmentId, amount, orderId, paymentId, signature];
-  const result = await this.pool.query(query, values);
-  return result.rows[0];
-}
+    const values = [enrollmentId, amount, orderId, paymentId, signature];
+    const result = await this.pool.query(query, values);
+    return result.rows[0];
+  }
 
- // 1. Record the Initial Order Intent (Status: 'Created')
-  async createPaymentIntent(enrollmentId: number, amount: number, orderId: string) {
+  // 1. Record the Initial Order Intent (Status: 'Created')
+  async createPaymentIntent(
+    enrollmentId: number,
+    amount: number,
+    orderId: string,
+  ) {
     const query = `
       INSERT INTO student_payments (enrollment_id, amount_paid, razorpay_order_id, status)
       VALUES ($1, $2, $3, 'Created')
@@ -82,7 +86,11 @@ async getAllTransactions() {
       DO UPDATE SET razorpay_order_id = $3, status = 'Created'
       RETURNING *;
     `;
-    const result = await this.pool.query(query, [enrollmentId, amount, orderId]);
+    const result = await this.pool.query(query, [
+      enrollmentId,
+      amount,
+      orderId,
+    ]);
     return result.rows[0];
   }
 
@@ -98,25 +106,85 @@ async getAllTransactions() {
       WHERE razorpay_order_id = $1
       RETURNING *;
     `;
-    const result = await this.pool.query(query, [orderId, paymentId, signature]);
+    const result = await this.pool.query(query, [
+      orderId,
+      paymentId,
+      signature,
+    ]);
     return result.rows[0];
   }
 
   // 3. Get Fees with Join (As discussed before)
+  // async getStudentEnrollmentFees(studentId: string) {
+  //   const query = `
+  //     SELECT
+  //       e.id AS enrollment_id,
+  //       c.name AS course_name,
+  //       cf.base_amount AS total_fee,
+  //       COALESCE(sp.status, 'Pending') AS payment_status
+  //     FROM enrollments e
+  //     JOIN courses c ON e.course_id = c.id
+  //     JOIN course_fees cf ON c.id = cf.course_id
+  //     LEFT JOIN student_payments sp ON e.id = sp.enrollment_id
+  //     WHERE e.student_id = $1 AND e.deleted_at IS NULL
+  //   `;
+  //   const result = await this.pool.query(query, [studentId]);
+  //   return result.rows;
+  // }
+
+  // FeeRepository.ts
+
+  async getTransactionDetails(transactionId: string) {
+    const query = `
+    SELECT 
+      sp.razorpay_payment_id,
+      sp.amount_paid,
+      sp.payment_date,
+      u.email AS student_email,
+      c.name AS course_name
+    FROM student_payments sp
+    JOIN enrollments e ON sp.enrollment_id = e.id
+    JOIN users u ON e.student_id = u.id
+    JOIN courses c ON e.course_id = c.id
+    WHERE sp.razorpay_payment_id = $1;
+  `;
+    const result = await this.pool.query(query, [transactionId]);
+    return result.rows[0];
+  }
+
+  // FeeRepository.ts update
   async getStudentEnrollmentFees(studentId: string) {
     const query = `
-      SELECT 
-        e.id AS enrollment_id,
-        c.name AS course_name,
-        cf.base_amount AS total_fee,
-        COALESCE(sp.status, 'Pending') AS payment_status
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      JOIN course_fees cf ON c.id = cf.course_id
-      LEFT JOIN student_payments sp ON e.id = sp.enrollment_id
-      WHERE e.student_id = $1 AND e.deleted_at IS NULL
-    `;
+    SELECT 
+      e.id AS enrollment_id,
+      c.name AS course_name,
+      cf.base_amount AS total_fee,
+      COALESCE(sp.status, 'Pending') AS payment_status,
+      sp.razorpay_payment_id -- ADD THIS LINE
+    FROM enrollments e
+    JOIN courses c ON e.course_id = c.id
+    JOIN course_fees cf ON c.id = cf.course_id
+    LEFT JOIN student_payments sp ON e.id = sp.enrollment_id
+    WHERE e.student_id = $1 AND e.deleted_at IS NULL
+  `;
     const result = await this.pool.query(query, [studentId]);
     return result.rows;
   }
+
+  // FeeRepository.ts
+
+async getRevenueData() {
+  const query = `
+    SELECT 
+      TO_CHAR(payment_date, 'YYYY-MM-DD') AS date,
+      SUM(amount_paid) AS total_revenue
+    FROM student_payments
+    WHERE status = 'Paid'
+    GROUP BY date
+    ORDER BY date ASC
+    LIMIT 30; -- Get last 30 days of data
+  `;
+  const result = await this.pool.query(query);
+  return result.rows;
+}
 }

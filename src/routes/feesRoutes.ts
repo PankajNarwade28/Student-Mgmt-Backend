@@ -56,5 +56,24 @@ feeRouter.get(
   authMiddleware,
   authorize(["Admin"]),
   feeController.getAllLogs.bind(feeController)
+
 );
+
+// feeRoutes.ts
+
+// Download Invoice (Transaction ID is the Razorpay Payment ID)
+feeRouter.get(
+  '/invoice/:transactionId',
+  authMiddleware,
+  authorize(["Admin", "Student"]), // Both can download their respective invoices
+  feeController.getInvoice.bind(feeController)
+);
+
+feeRouter.get(
+  '/admin/revenue-stats',
+  authMiddleware,
+  authorize(["Admin"]),
+  feeController.getRevenueStats.bind(feeController)
+);
+
 export default feeRouter;

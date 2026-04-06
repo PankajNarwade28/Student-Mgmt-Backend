@@ -55,7 +55,14 @@ app.use('/api/auth', authRoutes);
 
 // Admin Routes with auth and authorization middleware
 const adminRoutes = require('./routes/adminRoutes').default;
-app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes );
+app.use('/api/admin',authMiddleware, authorize(['Admin']),adminRoutes);
+// server.ts
+
+// Instead of a top-level import, do this if you still crash:
+app.use('/api/admin/coupons', authMiddleware, authorize(['Admin']), (req, res, next) => {
+  const couponRoutes = require('./routes/couponRoutes').default;
+  couponRoutes(req, res, next);
+});
 
 // User Routes with auth middleware
 const userRoutes = require('./routes/userRoutes').default;
@@ -64,6 +71,7 @@ app.use('/api/email',emailRoutes)
 
 app.use('/api/user', authMiddleware, userRoutes);
 import courseRoutes from './routes/courseRoutes';  
+import couponRoutes from "./routes/couponRoutes";
 app.use('/api/courses',authMiddleware,  courseRoutes ); 
 app.use('/api/audit', authMiddleware, require('./routes/auditRoutes').default);
 app.use('/api/teacher', authMiddleware, require('./routes/teacherRoutes').default);

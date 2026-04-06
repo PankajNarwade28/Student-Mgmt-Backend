@@ -39,6 +39,9 @@ export const TYPES = {
   FeeRepository: Symbol.for("FeeRepository"),
   FeeController: Symbol.for("FeeController"),
 
+// 8. Coupons
+  CouponRepository: Symbol.for("CouponRepository"),
+  CouponController: Symbol.for("CouponController"),
 };
 
 export type TYPES = typeof TYPES;
