@@ -70,8 +70,7 @@ import emailRoutes from './routes/emailRoutes';
 app.use('/api/email',emailRoutes)
 
 app.use('/api/user', authMiddleware, userRoutes);
-import courseRoutes from './routes/courseRoutes';  
-import couponRoutes from "./routes/couponRoutes";
+import courseRoutes from './routes/courseRoutes';   
 app.use('/api/courses',authMiddleware,  courseRoutes ); 
 app.use('/api/audit', authMiddleware, require('./routes/auditRoutes').default);
 app.use('/api/teacher', authMiddleware, require('./routes/teacherRoutes').default);

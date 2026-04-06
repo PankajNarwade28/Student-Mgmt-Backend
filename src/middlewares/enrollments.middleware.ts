@@ -1,7 +1,7 @@
 // middleware/validateEnrollment.ts
 import { Request, Response, NextFunction } from 'express'; 
 import { TYPES } from '../config/types';
-import { container } from '../config/inversify.config';
+import { container } from '../config/inversify.config'; 
 
 
 export const validateEnrollment = async (
@@ -61,5 +61,51 @@ export const validateEnrollment = async (
   } catch (error) {
     console.error("Enrollment Validation Error:", error);
     res.status(500).json({ message: "Internal Server Error during validation." });
+  }
+};
+ 
+export const checkEnrollmentLock = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { studentId, courseId } = req.body;
+    const pool = container.get<any>(TYPES.DbPool);
+
+    if (!studentId || !courseId) {
+      return res.status(400).json({ message: "Student ID and Course ID are required" });
+    }
+
+    // Query to join enrollments and student_payments
+    // We check if status is 'Active' (or your specific 'Locked' term) 
+    // AND if there is an entry in student_payments with status 'Paid'
+    const query = `
+      SELECT e.id, e.status, p.status as payment_status
+      FROM enrollments e
+      LEFT JOIN student_payments p ON e.id = p.enrollment_id
+      WHERE e.student_id = $1 AND e.course_id = $2
+    `;
+    
+    const { rows } = await pool.query(query, [studentId, courseId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No enrollment found for this student and course." });
+    }
+
+    const enrollment = rows[0];
+
+    // Logic: Block removal if status is 'Active' AND payment exists as 'Paid'
+    // You can adjust these strings based on your exact business rules
+    const isPaid = enrollment.payment_status === 'Paid'; 
+
+    if (isPaid && enrollment.status === 'Active') {
+      return res.status(400).json({
+        status: "error",
+        message: `Cannot modify enrollment: Student has an active enrollment with ${courseId}.`
+      });
+    }
+
+    // If neither paid nor locked, allow the controller to remove the student
+    next();
+  } catch (error) {
+    console.error("Middleware Check Error:", error);
+    res.status(500).json({ message: "Internal server error during verification" });
   }
 };

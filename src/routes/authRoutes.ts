@@ -24,4 +24,10 @@ router.patch(
   authController.changePassword.bind(authController)
 );
 
+router.post(
+  "/verify-password", 
+  authMiddleware, 
+  authController.verifyPassword.bind(authController)
+);
+
 export default router;

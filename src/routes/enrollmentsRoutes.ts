@@ -12,7 +12,7 @@ import { AdminController } from "../controllers/adminController";
 // Middlewares
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/access.middleware";
-import { validateEnrollment } from "../middlewares/enrollments.middleware";
+import { checkEnrollmentLock, validateEnrollment } from "../middlewares/enrollments.middleware";
 
 const router = Router();
 
@@ -36,12 +36,16 @@ router.use(authMiddleware, authorize(["Admin"]));
 // GET: Fetch metadata for enrollment forms (dropdowns, etc.)
 router.get(
   "/data",
+  authMiddleware,
+  authorize(["Admin"]),
   enrollmentController.fetchEnrollmentData.bind(enrollmentController),
 );
 
 // POST: Add a new student to a course
 router.post(
   "/add",
+  authMiddleware, // Ensure user is authenticated
+  authorize(["Admin"]), // Ensure user has Admin role 
   validateEnrollment,
   enrollmentController.enrollStudent.bind(enrollmentController),
 );
@@ -49,6 +53,9 @@ router.post(
 // POST: Remove a student from a course
 router.post(
   "/remove",
+  authMiddleware, // Ensure user is authenticated
+  authorize(["Admin"]), // Ensure user has Admin role
+  checkEnrollmentLock,
   enrollmentController.removeEnrollment.bind(enrollmentController),
 );
 
@@ -57,6 +64,8 @@ router.post(
 // If the logic is in AdminController, keep it. If in EnrollmentController, change it.
 router.patch(
   "/:enrollmentId/status",
+  authMiddleware,
+  authorize(["Admin"]), 
   enrollmentController.updateEnrollmentStatus.bind(enrollmentController),
 );
 

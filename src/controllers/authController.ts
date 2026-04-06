@@ -31,7 +31,7 @@ export class AuthController {
         // !user.is_active ||   // Uncomment if you want to restrict login for inactive users in future.
         !(await bcrypt.compare(password, user.password))
       ) {
-        res.status(401).json({ message: "Invalid email or password" });
+        res.status(400).json({ message: "Invalid email or password" });
         return;
       }
 
@@ -83,17 +83,17 @@ export class AuthController {
   changePassword = async (req: Request, res: Response) => {
     try {
       const userId = (req as any).user.id;
-      const { oldPassword, newPassword } = req.body;
+      const { newPassword } = req.body;
 
       // 1. Fetch current hash and status
       const user = await this.userRepo.findPasswordAndStatusById(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       // 2. Verify current password
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Incorrect current password" });
-      }
+      // const isMatch = await bcrypt.compare(oldPassword, user.password);
+      // if (!isMatch) {
+      //   return res.status(401).json({ message: "Incorrect current password" });
+      // }
 
       // 3. Hash new password
       const newHash = await bcrypt.hash(newPassword, 10);
@@ -118,4 +118,30 @@ export class AuthController {
       return res.status(500).json({ message: "Internal server error" });
     }
   };
+
+  verifyPassword = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    // 1. Fetch current hash
+    const user = await this.userRepo.findPasswordAndStatusById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 2. Verify password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(409).json({ message: "Incorrect password" });
+    }
+
+    return res.status(200).json({ success: true, message: "Verification successful" });
+  } catch (error) {
+    console.error("VerifyPassword Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 }
