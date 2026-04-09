@@ -1,8 +1,12 @@
 import { Pool } from "pg";
 import bcrypt from "bcrypt";
 import { inject, injectable } from "inversify";
+import { Request, Response } from "express";
 import { TYPES } from "../config/types";
 import dotenv from "dotenv";
+
+  import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 dotenv.config();
 @injectable()
 export class AdminRepository {
@@ -281,4 +285,6 @@ export class AdminRepository {
     const { rows } = await this.pool.query(query, [limit]);
     return rows;
   }
+
+ 
 }

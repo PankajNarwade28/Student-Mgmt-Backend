@@ -14,4 +14,5 @@ export class HealthRepository {
       throw error; // bubble up original error
     }
   }
+  
 }

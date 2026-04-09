@@ -9,12 +9,8 @@ export class EnrollmentRepository {
   async getEnrollmentDetails() {
     const query = `
       SELECT 
-        c.id, c.name, c.code,
-        COALESCE(
-          JSON_AGG(
-            JSON_BUILD_OBJECT('id', p.user_id, 'name', CONCAT(p.first_name, ' ', p.last_name))
-          ) FILTER (WHERE p.user_id IS NOT NULL), '[]'
-        ) AS enrolled_students
+        c.id, c.name, c.code, c.description, c.created_at,
+        COUNT(e.student_id) AS enrolled_students
       FROM courses c
       LEFT JOIN enrollments e ON c.id = e.course_id
       LEFT JOIN profiles p ON e.student_id = p.user_id
