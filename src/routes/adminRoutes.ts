@@ -196,4 +196,11 @@ router.get(
   authorize(["Admin"]), 
   courseController.getCoursesWithFees.bind(courseController)
 );
+
+router.get(
+  "/reports/export-pdf",
+  authMiddleware,
+  authorize(["Admin"]),
+  adminController.exportSystemReport.bind(adminController),
+);
 export default router;
