@@ -9,7 +9,7 @@ export class ProfileRepository {
 
   async getProfileByUserId(userId: string) {
     const query = `
-    SELECT p.*, u.email 
+    SELECT p.*, u.email ,u.role
     FROM profiles p
     JOIN users u ON p.user_id = u.id
     WHERE p.user_id = $1

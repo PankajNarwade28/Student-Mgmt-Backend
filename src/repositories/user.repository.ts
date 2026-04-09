@@ -84,4 +84,6 @@ export class UserRepository {
     const query = "UPDATE users SET is_active = $2 WHERE id = $1";
     await this.pool.query(query, [userId, isActive]);
   }
+
+  
 }
