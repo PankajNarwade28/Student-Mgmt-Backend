@@ -4,12 +4,16 @@ import { TYPES } from "../config/types";
 import { AdminRepository } from "./../repositories/admin.repository";
 import { UserRepository } from "../repositories/user.repository";
 import { container } from "../config/inversify.config";
+import { jsPDF } from "jspdf";
+import autoTable, { applyPlugin } from "jspdf-autotable";
+
+// MANDATORY: This attaches the autoTable function to the jsPDF prototype for Node.js
+applyPlugin(jsPDF);
 
 @injectable()
 export class AdminController {
   constructor(
-    @inject(TYPES.AdminRepository) private readonly adminRepo: AdminRepository, 
-
+    @inject(TYPES.AdminRepository) private readonly adminRepo: AdminRepository,
   ) {}
 
   // ==========================================
@@ -42,7 +46,6 @@ export class AdminController {
     }
   };
 
-  
   getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
       // 1. Get query params (default to page 1, limit 10)
@@ -105,29 +108,32 @@ export class AdminController {
   // ==========================================
 
   getUserDirectory = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const page = Number.parseInt(req.query.page as string) || 1;
-    const limit = Number.parseInt(req.query.limit as string) || 9;
-    const role = req.query.role as string; // Extract role from query
-    const offset = (page - 1) * limit;
+    try {
+      const page = Number.parseInt(req.query.page as string) || 1;
+      const limit = Number.parseInt(req.query.limit as string) || 9;
+      const role = req.query.role as string; // Extract role from query
+      const offset = (page - 1) * limit;
 
-    const userRepository = container.get<UserRepository>(TYPES.UserRepository);
-    const { users, totalCount } = await userRepository.getDetailedUserDirectory(limit, offset, role);
+      const userRepository = container.get<UserRepository>(
+        TYPES.UserRepository,
+      );
+      const { users, totalCount } =
+        await userRepository.getDetailedUserDirectory(limit, offset, role);
 
-    res.status(200).json({ 
-      success: true, 
-      users,
-      pagination: {
-        totalItems: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        currentPage: page
-      }
-    });
-  } catch (error: unknown) {
-    console.error("Error:",error)
-    res.status(500).json({ success: false, message: "Database error" });
-  }
-};
+      res.status(200).json({
+        success: true,
+        users,
+        pagination: {
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPage: page,
+        },
+      });
+    } catch (error: unknown) {
+      console.error("Error:", error);
+      res.status(500).json({ success: false, message: "Database error" });
+    }
+  };
 
   // ==========================================
   // 3. Enrollment Lifecycle Management
@@ -194,6 +200,68 @@ export class AdminController {
     } catch (error) {
       console.error("Analytics Error:", error);
       res.status(500).json({ message: "Error fetching analytics data" });
+    }
+  };
+
+  // Inside AdminController.ts
+
+  exportSystemReport = async (req: Request, res: Response) => {
+    try {
+      const stats = await this.adminRepo.getSystemStats();
+      const logs = await this.adminRepo.getRecentAuditLogs(25);
+
+      const doc = new jsPDF();
+      const purple: [number, number, number] = [99, 102, 241];
+
+      // 1. Header
+      doc.setFontSize(20);
+      doc.setTextColor(purple[0], purple[1], purple[2]);
+      doc.text("System Analytics Report", 14, 22);
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(
+        `Total Students: ${stats.student_count} | Teachers: ${stats.teacher_count}`,
+        14,
+        36,
+      );
+
+      // 2. Table - Now correctly attached via applyPlugin
+      autoTable(doc, {
+        startY: 45,
+        head: [["User", "Operation", "Table", "Date"]],
+        body: logs.map((log: any) => [
+          log.user,
+          log.type,
+          log.table_name,
+          new Date(log.date).toLocaleDateString(),
+        ]),
+        headStyles: { fillColor: purple },
+        styles: { fontSize: 9 },
+      });
+
+      // 3. Output as Buffer
+      // Use "arraybuffer" for modern Node versions or "datauristring" for older ones
+      const pdfOutput = doc.output("arraybuffer");
+      const buffer = Buffer.from(pdfOutput);
+
+      // 4. Send with correct headers
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="System_Report.pdf"',
+        "Content-Length": buffer.length,
+      });
+
+      return res.end(buffer);
+    } catch (error: any) {
+      console.error("PDF Export Error:", error);
+      // If we haven't sent headers yet, send a clean JSON error
+      if (!res.headersSent) {
+        res
+          .status(500)
+          .json({ error: "Failed to generate PDF", details: error.message });
+      }
     }
   };
 }

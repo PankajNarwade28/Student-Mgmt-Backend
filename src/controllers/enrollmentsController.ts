@@ -12,11 +12,8 @@ export class EnrollmentController {
   // Gets the combined data for the Enrollments UI
   fetchEnrollmentData = async (req: Request, res: Response) => {
     try {
-      const [courses, students] = await Promise.all([
-        this.repository.getEnrollmentDetails(),
-        this.repository.getActiveStudentsList(),
-      ]);
-      res.status(200).json({ courses, students });
+      const courses = await this.repository.getEnrollmentDetails();
+      res.status(200).json({ courses });
     } catch (error) {
       console.error("Error fetching enrollment data:", error);
       res.status(500).json({ message: "Error fetching enrollment data" });
