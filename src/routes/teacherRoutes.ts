@@ -9,7 +9,6 @@ import { authorize } from "../middlewares/access.middleware";
 const router = Router();
 const repository = new TeacherRepository(pool);
 const controller = new TeacherController(repository);
-
 // Prefix: /api/teacher
 router.get(
   "/courses/:courseId/students",
@@ -52,5 +51,7 @@ router.delete(
   authorize(["Teacher", "Admin"]),
   controller.removeAnnouncement,
 );
+
+
 
 export default router;

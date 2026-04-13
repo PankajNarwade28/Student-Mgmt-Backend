@@ -8,12 +8,17 @@ import { validateAdminAddUser } from "../middlewares/data.validation";
 import { CourseController } from "../controllers/courseController";
 import { RequestController } from "../controllers/requestController";
 import { EnrollmentController } from "../controllers/enrollmentsController";
+
+// Schedule routes
+import { ScheduleController } from "../controllers/scheduleController";
+import { ScheduleRepository } from "../repositories/schedule.repository";
 import {
   checkCourseAssignments,
   checkEnrollmentCount,
   validateCourseData,
 } from "../middlewares/course.validation";
 import { isValidTeacher } from "../middlewares/isValidTeacher.middleware";
+import { pool } from "../config/db";
 
 const router = express.Router();
 
@@ -30,6 +35,9 @@ const requestController = container.get<RequestController>(
 const enrollmentController = container.get<EnrollmentController>(
   TYPES.EnrollmentController,
 );
+
+const scheduleRepo = new ScheduleRepository(pool);
+const scheduleCtrl = new ScheduleController(scheduleRepo);
 
 // ---------------------------------------------------------
 // 1. User Management Routes
@@ -202,5 +210,35 @@ router.get(
   authMiddleware,
   authorize(["Admin"]),
   adminController.exportSystemReport.bind(adminController),
+);
+
+// Daily Registry (with specific date)
+router.get(
+  '/schedule/day/:date',
+  authMiddleware,
+  authorize(['Admin']),
+  scheduleCtrl.getDay.bind(scheduleCtrl)
+);
+
+// Delete Registry Entry
+router.delete(
+  '/schedule/:id',
+  authMiddleware,
+  authorize(['Admin']),
+  scheduleCtrl.remove.bind(scheduleCtrl)
+);
+
+router.post(
+  '/schedule',
+  authMiddleware,
+  authorize(['Admin']),
+  scheduleCtrl.create.bind(scheduleCtrl)
+);
+ 
+router.get(
+  '/schedule/week',
+  authMiddleware,
+  authorize(['Admin']),
+  scheduleCtrl.getWeek.bind(scheduleCtrl)
 );
 export default router;

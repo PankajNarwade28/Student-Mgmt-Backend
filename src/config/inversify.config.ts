@@ -31,6 +31,8 @@ import { FeeController } from "../controllers/feeController";
 import { FeeRepository } from "../repositories/fee.repository";
 import { CouponController } from "../controllers/couponController";
 import { CouponRepository } from "../repositories/coupon.repository";
+import { ScheduleController } from "../controllers/scheduleController";
+import { ScheduleRepository } from "../repositories/schedule.repository";
 
 const container = new Container();
 
@@ -146,4 +148,7 @@ container
   .to(CouponRepository)
   .inSingletonScope();
 container.bind<CouponRepository>(CouponRepository).toSelf();
+
+container.bind<ScheduleRepository>(ScheduleRepository).toSelf().inSingletonScope();
+container.bind<ScheduleController>(ScheduleController).toSelf().inSingletonScope();
 export { container };
