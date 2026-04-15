@@ -33,6 +33,8 @@ import { CouponController } from "../controllers/couponController";
 import { CouponRepository } from "../repositories/coupon.repository";
 import { ScheduleController } from "../controllers/scheduleController";
 import { ScheduleRepository } from "../repositories/schedule.repository";
+import { QuizController } from "../controllers/quizController";
+import { QuizRepository } from "../repositories/quiz.repository";
 
 const container = new Container();
 
@@ -149,6 +151,17 @@ container
   .inSingletonScope();
 container.bind<CouponRepository>(CouponRepository).toSelf();
 
-container.bind<ScheduleRepository>(ScheduleRepository).toSelf().inSingletonScope();
-container.bind<ScheduleController>(ScheduleController).toSelf().inSingletonScope();
+container
+  .bind<ScheduleRepository>(ScheduleRepository)
+  .toSelf()
+  .inSingletonScope();
+container
+  .bind<ScheduleController>(ScheduleController)
+  .toSelf()
+  .inSingletonScope();
+
+container.bind<QuizController>(QuizController).toSelf().inSingletonScope();
+container.bind<QuizRepository>(QuizRepository).toSelf().inSingletonScope();
+container.bind<QuizController>(TYPES.QuizController).to(QuizController).inSingletonScope();
+container.bind<QuizRepository>(TYPES.QuizRepository).to(QuizRepository).inSingletonScope();
 export { container };
