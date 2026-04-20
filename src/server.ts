@@ -46,6 +46,11 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+    console.log(`[${req.method}] ${req.path} - Origin: ${req.headers.origin}`);
+    next();
+});
+
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome to the Student Management System API');
 });

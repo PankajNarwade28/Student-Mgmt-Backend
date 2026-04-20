@@ -76,4 +76,25 @@ router.get(
   quizCtrl.analytics.bind(quizCtrl)
 );
 
+// GET FULL QUIZ (Student Attempt)
+router.get(
+  "/:id/full",
+  authMiddleware,
+  authorize(["Student"]),
+  quizCtrl.getFullQuiz.bind(quizCtrl)
+);
+
+// SUBMIT QUIZ
+router.post(
+  "/submit",
+  authMiddleware,
+  authorize(["Student"]),
+  quizCtrl.submit.bind(quizCtrl)
+);
+router.get(
+  "/student",
+  authMiddleware,
+  authorize(["Student"]),
+  quizCtrl.getByStudent.bind(quizCtrl)
+);
 export default router;
