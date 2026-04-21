@@ -55,6 +55,7 @@ export class QuizController {
   getFullQuiz = async (req: Request, res: Response) => {
   try {
     const rawId = req.params.id;
+    console.log("Fetching full quiz for id:", rawId);
 
     // ✅ VALIDATION
     if (!rawId || isNaN(Number(rawId))) {
@@ -114,7 +115,7 @@ export class QuizController {
     const studentId = user.id;
 
     const data = await this.repo.getByStudent(studentId);
-    console.log("Quizzes for student:", data);
+    // console.log("Quizzes for student:", data);
 
     res.json({ data });
   } catch (err) {

@@ -8,30 +8,48 @@ export class QuizRepository {
 
   // STUDENT / TEACHER
   async getByCourse(courseId: number, userId: string, role: string) {
-    let query = "";
-    let values: any[] = [];
+  let query = "";
+  let values: any[] = [];
 
-    if (role === "Teacher") {
-      // Teacher can only access own courses
-      query = `
-      SELECT q.* FROM quizzes q
+  if (role === "Teacher") {
+    query = `
+      SELECT q.*
+      FROM quizzes q
       JOIN courses c ON q.course_id = c.id
       WHERE q.course_id = $1 AND c.teacher_id = $2
     `;
-      values = [courseId, userId];
-    } else {
-      // Student → only enrolled courses
-      query = `
-      SELECT q.* FROM quizzes q
+    values = [courseId, userId];
+  } else {
+    // ✅ STUDENT (FIXED)
+    query = `
+      SELECT 
+        q.id,
+        q.title,
+        q.time_limit_minutes,
+
+        EXISTS (
+          SELECT 1 FROM quiz_submissions qs
+          WHERE qs.quiz_id = q.id AND qs.student_id = $2
+        ) AS attempted,
+
+        (
+          SELECT qs.score 
+          FROM quiz_submissions qs
+          WHERE qs.quiz_id = q.id AND qs.student_id = $2
+          LIMIT 1
+        ) AS score
+
+      FROM quizzes q
       JOIN enrollments e ON e.course_id = q.course_id
       WHERE q.course_id = $1 AND e.student_id = $2
+      ORDER BY q.created_at DESC
     `;
-      values = [courseId, userId];
-    }
-
-    const { rows } = await this.pool.query(query, values);
-    return rows;
+    values = [courseId, userId];
   }
+
+  const { rows } = await this.pool.query(query, values);
+  return rows;
+}
 
   // TEACHER
   // COURSE REPO (or inside same repo if needed)
@@ -175,6 +193,8 @@ export class QuizRepository {
       [quizId],
     );
 
+    
+
     return rows[0];
   }
 
@@ -214,37 +234,42 @@ export class QuizRepository {
     return rows.length > 0;
   }
 
- async getByStudent(studentId: string) {
-  const { rows } = await this.pool.query(
-    `
+  async getByStudent(studentId: string) {
+    const { rows } = await this.pool.query(
+      `
     SELECT 
-      q.id,
-      q.title,
-      q.time_limit_minutes,
-      c.name AS course_name,
-      c.id AS course_id,
+  q.id,
+  q.title,
+  q.time_limit_minutes,
+  c.name AS course_name,
+  c.id AS course_id,
 
-      EXISTS (
-        SELECT 1 
-        FROM quiz_submissions qs 
-        WHERE qs.quiz_id = q.id 
-        AND qs.student_id = $1
-      ) AS attempted
+  EXISTS (
+    SELECT 1 
+    FROM quiz_submissions qs 
+    WHERE qs.quiz_id = q.id 
+    AND qs.student_id = $1
+  ) AS attempted,
 
-    FROM quizzes q
-    JOIN courses c ON q.course_id = c.id
-    JOIN enrollments e ON e.course_id = c.id
+  (
+    SELECT qs.score 
+    FROM quiz_submissions qs 
+    WHERE qs.quiz_id = q.id 
+    AND qs.student_id = $1
+    LIMIT 1
+  ) AS score
 
-    WHERE e.student_id = $1
-
-    ORDER BY q.created_at DESC
+FROM quizzes q
+JOIN courses c ON q.course_id = c.id
+JOIN enrollments e ON e.course_id = c.id
+WHERE e.student_id = $1
+ORDER BY q.created_at DESC;
     `,
-    [studentId]
-  );
+      [studentId],
+    );
 
-  return rows;
-}
- 
+    return rows;
+  }
 }
 
 export default QuizRepository;
