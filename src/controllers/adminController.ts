@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../config/types";
-import { AdminRepository } from "./../repositories/admin.repository";
+import { AdminRepository } from "../repositories/admin.repository";
 import { UserRepository } from "../repositories/user.repository";
 import { container } from "../config/inversify.config";
 import { jsPDF } from "jspdf";

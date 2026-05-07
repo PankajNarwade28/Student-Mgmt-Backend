@@ -1,5 +1,6 @@
 import { QuizController } from "../controllers/quizController";
 import QuizRepository from "../repositories/quiz.repository";
+import { AttendanceController } from "../controllers/attendanceController";
 
  
 
@@ -53,6 +54,10 @@ export const TYPES = {
   // 10. Quiz
   QuizController : Symbol.for("QuizController"),
   QuizRepository : Symbol.for("QuizRepository"),
+
+  // 11. Attendance
+  AttendanceRepository : Symbol.for("AttendanceRepository"),
+  AttendanceController  : Symbol.for("AttendanceController"),
 };
 
 export type TYPES = typeof TYPES;

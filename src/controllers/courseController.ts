@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CourseRepository } from "./../repositories/course.repository";
+import { CourseRepository } from "../repositories/course.repository";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../config/types";
 

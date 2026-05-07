@@ -1,7 +1,7 @@
 import express from "express";
 import { container } from "../config/inversify.config";
 import { TYPES } from "../config/types";
-import { AdminController } from "./../controllers/adminController";
+import { AdminController } from "../controllers/adminController";
 import { authorize } from "../middlewares/access.middleware";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { validateAdminAddUser } from "../middlewares/data.validation";

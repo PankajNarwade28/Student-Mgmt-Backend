@@ -77,12 +77,15 @@ app.use('/api/email',emailRoutes)
 app.use('/api/user', authMiddleware, userRoutes);
 import courseRoutes from './routes/courseRoutes';   
 import scheduleRoutes from './routes/scheduleRoutes';
+import quizRoutes from './routes/quizRoutes'
+import attendanceRoutes from './routes/attendanceRoutes';
 app.use('/api/courses',authMiddleware,  courseRoutes ); 
 app.use('/api/audit', authMiddleware, require('./routes/auditRoutes').default);
 app.use('/api/teacher', authMiddleware, require('./routes/teacherRoutes').default);
 app.use('/api/student', authMiddleware, require('./routes/feesRoutes').default);
 app.use("/api/schedule", scheduleRoutes);
-app.use("/api/quiz", require('./routes/quizRoutes').default);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/quiz", quizRoutes);
 
 // using HealthController for /health route
 const healthController = container.get<HealthController>(TYPES.HealthController);
