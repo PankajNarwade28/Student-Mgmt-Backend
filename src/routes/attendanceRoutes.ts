@@ -19,7 +19,7 @@ router.post(
 router.get(
   "/admin/global-report", 
   authMiddleware, 
-  authorize(["Admin", "Teacher"]), 
+  authorize(["Admin", "Teacher","Student"]), 
   controller.getGlobalReport
 );
 

@@ -1,11 +1,9 @@
 import { Pool } from "pg";
 import bcrypt from "bcrypt";
-import { inject, injectable } from "inversify";
-import { Request, Response } from "express";
+import { inject, injectable } from "inversify"; 
 import { TYPES } from "../config/types";
 import dotenv from "dotenv";
-
-  import { jsPDF } from "jspdf";
+ 
 import "jspdf-autotable";
 dotenv.config();
 @injectable()
@@ -23,11 +21,11 @@ export class AdminRepository {
   }
 
   async createUser(email: string, role: string): Promise<any> {
-    const defaultPassword = 
+    const defaultPassword =
       role.toLowerCase() === "teacher"
         ? process.env.DEFAULT_TEACHER_PASSWORD || "Teacher@2026"
-        : process.env.DEFAULT_STUDENT_PASSWORD || "Student@2026"; 
-        
+        : process.env.DEFAULT_STUDENT_PASSWORD || "Student@2026";
+
     const hashedPassword = await bcrypt.hash(defaultPassword, 12);
 
     const query = `
@@ -50,35 +48,28 @@ export class AdminRepository {
     }
   }
 
-  // async getAllUsers() {
-  //   const query =
-  //     "SELECT id, email, role, is_active, created_at, updated_at FROM users";
-  //   const { rows } = await this.pool.query(query);
-  //   return rows;
-  // }
-
   async getAllUsers(limit: number, offset: number) {
-  // Query 1: Fetch the specific page of users
-  const dataQuery = `
+    // Query 1: Fetch the specific page of users
+    const dataQuery = `
     SELECT id, email, role, is_active, created_at, updated_at 
     FROM users 
     ORDER BY created_at DESC 
     LIMIT $1 OFFSET $2
   `;
-  
-  // Query 2: Fetch total count to calculate total pages on frontend
-  const countQuery = "SELECT COUNT(*) FROM users";
 
-  const [dataRes, countRes] = await Promise.all([
-    this.pool.query(dataQuery, [limit, offset]),
-    this.pool.query(countQuery)
-  ]);
+    // Query 2: Fetch total count to calculate total pages on frontend
+    const countQuery = "SELECT COUNT(*) FROM users";
 
-  return {
-    users: dataRes.rows,
-    totalCount: Number.parseInt(countRes.rows[0].count)
-  };
-}
+    const [dataRes, countRes] = await Promise.all([
+      this.pool.query(dataQuery, [limit, offset]),
+      this.pool.query(countQuery),
+    ]);
+
+    return {
+      users: dataRes.rows,
+      totalCount: Number.parseInt(countRes.rows[0].count),
+    };
+  }
 
   async updateUser(id: string, email: string, role: string): Promise<any> {
     const query = `
@@ -109,23 +100,8 @@ export class AdminRepository {
   // 2. Student & Profile Management
   // ==========================================
 
-  // async getStudentsWithProfiles() {
-  //   const query = `
-  //     SELECT 
-  //       u.id, u.email, u.is_active, u.created_at,
-  //       p.first_name, p.last_name,
-  //       CONCAT(p.first_name, ' ', p.last_name) AS full_name
-  //     FROM users u
-  //     LEFT JOIN profiles p ON u.id = p.user_id
-  //     WHERE u.role = 'Student'
-  //     ORDER BY u.created_at DESC;
-  //   `;
-  //   const { rows } = await this.pool.query(query);
-  //   return rows;
-  // }
-
   async getStudentsWithProfiles(limit: number, offset: number) {
-  const dataQuery = `
+    const dataQuery = `
     SELECT 
       u.id, u.email, u.is_active, u.created_at,
       p.first_name, p.last_name,
@@ -137,18 +113,18 @@ export class AdminRepository {
     LIMIT $1 OFFSET $2;
   `;
 
-  const countQuery = `SELECT COUNT(*) FROM users WHERE role = 'Student'`;
+    const countQuery = `SELECT COUNT(*) FROM users WHERE role = 'Student'`;
 
-  const [dataRes, countRes] = await Promise.all([
-    this.pool.query(dataQuery, [limit, offset]),
-    this.pool.query(countQuery)
-  ]);
+    const [dataRes, countRes] = await Promise.all([
+      this.pool.query(dataQuery, [limit, offset]),
+      this.pool.query(countQuery),
+    ]);
 
-  return {
-    students: dataRes.rows,
-    totalCount: Number.parseInt(countRes.rows[0].count)
-  };
-}
+    return {
+      students: dataRes.rows,
+      totalCount: Number.parseInt(countRes.rows[0].count),
+    };
+  }
 
   async getStudentStats() {
     const query = `
@@ -166,25 +142,6 @@ export class AdminRepository {
   // ==========================================
   // 3. Enrollment Management
   // ==========================================
-
-  /**
-   * Fetches students for a specific course to be used in the EnrollmentStatus.tsx table
-   */
-  // async getStudentsByCourse(courseId: number) {
-  //   const query = `
-  //     SELECT
-  //       e.id as enrollment_id,
-  //       u.id as student_id,
-  //       CONCAT(p.first_name, ' ', p.last_name) as student_name,
-  //       e.status
-  //     FROM enrollments e
-  //     JOIN users u ON e.student_id = u.id
-  //     LEFT JOIN profiles p ON u.id = p.user_id
-  //     WHERE e.course_id = $1;
-  //   `;
-  //   const { rows } = await this.pool.query(query, [courseId]);
-  //   return rows;
-  // }
 
   async updateEnrollmentStatus(
     enrollmentId: number,
@@ -205,10 +162,6 @@ export class AdminRepository {
     return rows[0];
   }
 
-  /**
-   * Fetches all students enrolled in a specific course.
-   * Used for the Enrollment Management table view.
-   */
   async getStudentsByCourse(courseId: number) {
     const query = `
     SELECT 
@@ -254,6 +207,7 @@ export class AdminRepository {
     return rows;
   }
 
+  // Get System Stats
   async getSystemStats() {
     const query = `
       SELECT 
@@ -285,6 +239,4 @@ export class AdminRepository {
     const { rows } = await this.pool.query(query, [limit]);
     return rows;
   }
-
- 
 }

@@ -7,28 +7,6 @@ import { TYPES } from "../config/types";
 export class RequestRepository {
   constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
-  // Fetch detailed requests with joined names
-  //   async getAllDetailedRequests() {
-  //   // Check your DB: if the column is actually 'created_at', change it here
-  //   const query = `
-  //     SELECT
-  //       r.id,
-  //       r.student_id,
-  //       r.course_id,
-  //       r.requested_at, -- Ensure this matches your DB exactly
-  //       p.first_name || ' ' || p.last_name as student_name,
-  //       u.email as student_email,
-  //       c.name as course_name
-  //     FROM enrollment_requests r
-  //     JOIN users u ON r.student_id = u.id
-  //     LEFT JOIN profiles p ON u.id = p.user_id
-  //     JOIN courses c ON r.course_id = c.id
-  //     ORDER BY r.requested_at DESC;
-  //   `;
-  //   const result = await this.pool.query(query);
-  //   return result.rows;
-  // }
-
   async getAllDetailedRequests(limit: number, offset: number) {
     const dataQuery = `
     SELECT 

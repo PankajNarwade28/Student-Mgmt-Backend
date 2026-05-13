@@ -4,24 +4,24 @@ import { TYPES } from "../config/types";
 
 @injectable()
 export class QuizRepository {
-  constructor(@inject(TYPES.DbPool) private pool: Pool) {}
+  constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   // STUDENT / TEACHER
   async getByCourse(courseId: number, userId: string, role: string) {
-  let query = "";
-  let values: any[] = [];
+    let query = "";
+    let values: any[] = [];
 
-  if (role === "Teacher") {
-    query = `
+    if (role === "Teacher") {
+      query = `
       SELECT q.*
       FROM quizzes q
       JOIN courses c ON q.course_id = c.id
       WHERE q.course_id = $1 AND c.teacher_id = $2
     `;
-    values = [courseId, userId];
-  } else {
-    // ✅ STUDENT (FIXED)
-    query = `
+      values = [courseId, userId];
+    } else {
+      // ✅ STUDENT (FIXED)
+      query = `
       SELECT 
         q.id,
         q.title,
@@ -44,12 +44,12 @@ export class QuizRepository {
       WHERE q.course_id = $1 AND e.student_id = $2
       ORDER BY q.created_at DESC
     `;
-    values = [courseId, userId];
-  }
+      values = [courseId, userId];
+    }
 
-  const { rows } = await this.pool.query(query, values);
-  return rows;
-}
+    const { rows } = await this.pool.query(query, values);
+    return rows;
+  }
 
   // TEACHER
   // COURSE REPO (or inside same repo if needed)
@@ -70,10 +70,13 @@ export class QuizRepository {
     return rows;
   }
 
+  // ADMIN
+  // Delete quiz and all related questions/options
   async deleteQuiz(id: number) {
     await this.pool.query("DELETE FROM quizzes WHERE id=$1", [id]);
   }
 
+  // Update quiz
   async updateQuiz(id: number, data: any) {
     const { rows } = await this.pool.query(
       `UPDATE quizzes 
@@ -193,8 +196,6 @@ export class QuizRepository {
       [quizId],
     );
 
-    
-
     return rows[0];
   }
 
@@ -226,6 +227,8 @@ export class QuizRepository {
 
     return rows[0];
   }
+
+  // check is attempted or not
   async hasAttempted(studentId: string, quizId: number) {
     const { rows } = await this.pool.query(
       `SELECT 1 FROM quiz_submissions WHERE student_id=$1 AND quiz_id=$2`,
@@ -234,6 +237,7 @@ export class QuizRepository {
     return rows.length > 0;
   }
 
+  // Get Submissions by student
   async getByStudent(studentId: string) {
     const { rows } = await this.pool.query(
       `

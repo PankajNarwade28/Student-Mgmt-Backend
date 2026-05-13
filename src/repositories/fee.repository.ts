@@ -6,28 +6,6 @@ import { TYPES } from "../config/types";
 export class FeeRepository {
   constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
-  // async getStudentEnrollmentFees(studentId: string) {
-  //   const query = `
-  //     SELECT
-  //       e.id AS enrollment_id,
-  //       c.name AS course_name,
-  //       cf.base_amount AS total_fee,
-  //       CASE
-  //         WHEN sp.status = 'Paid' THEN 'Paid'
-  //         ELSE 'Pending'
-  //       END AS payment_status
-  //     FROM enrollments e
-  //     JOIN courses c ON e.course_id = c.id
-  //     JOIN course_fees cf ON c.id = cf.course_id
-  //     LEFT JOIN student_payments sp ON e.id = sp.enrollment_id
-  //     WHERE e.student_id = $1 AND e.deleted_at IS NULL
-  //   `;
-  //   const result = await this.pool.query(query, [studentId]);
-  //   return result.rows;
-  // }
-
-  // FeeRepository.ts
-
   async getAllTransactions() {
     const query = `
     SELECT 
@@ -114,26 +92,6 @@ export class FeeRepository {
     return result.rows[0];
   }
 
-  // 3. Get Fees with Join (As discussed before)
-  // async getStudentEnrollmentFees(studentId: string) {
-  //   const query = `
-  //     SELECT
-  //       e.id AS enrollment_id,
-  //       c.name AS course_name,
-  //       cf.base_amount AS total_fee,
-  //       COALESCE(sp.status, 'Pending') AS payment_status
-  //     FROM enrollments e
-  //     JOIN courses c ON e.course_id = c.id
-  //     JOIN course_fees cf ON c.id = cf.course_id
-  //     LEFT JOIN student_payments sp ON e.id = sp.enrollment_id
-  //     WHERE e.student_id = $1 AND e.deleted_at IS NULL
-  //   `;
-  //   const result = await this.pool.query(query, [studentId]);
-  //   return result.rows;
-  // }
-
-  // FeeRepository.ts
-
   async getTransactionDetails(transactionId: string) {
     const query = `
     SELECT 
@@ -172,9 +130,8 @@ export class FeeRepository {
   }
 
   // FeeRepository.ts
-
-async getRevenueData() {
-  const query = `
+  async getRevenueData() {
+    const query = `
     SELECT 
       TO_CHAR(payment_date, 'YYYY-MM-DD') AS date,
       SUM(amount_paid) AS total_revenue
@@ -184,7 +141,7 @@ async getRevenueData() {
     ORDER BY date ASC
     LIMIT 30; -- Get last 30 days of data
   `;
-  const result = await this.pool.query(query);
-  return result.rows;
-}
+    const result = await this.pool.query(query);
+    return result.rows;
+  }
 }

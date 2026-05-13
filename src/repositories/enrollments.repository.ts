@@ -85,8 +85,12 @@ export class EnrollmentRepository {
   }
 
   // Inside EnrollmentRepository.ts
-async updateEnrollmentStatus(enrollmentId: number, status: string, adminId: string) {
-  const query = `
+  async updateEnrollmentStatus(
+    enrollmentId: number,
+    status: string,
+    adminId: string,
+  ) {
+    const query = `
     UPDATE enrollments 
     SET 
       status = $2, 
@@ -96,8 +100,12 @@ async updateEnrollmentStatus(enrollmentId: number, status: string, adminId: stri
     RETURNING *;
   `;
 
-  // Check your terminal: if adminId is undefined, the query will fail.
-  const { rows } = await this.pool.query(query, [enrollmentId, status, adminId]);
-  return rows[0];
-}
+    // Check your terminal: if adminId is undefined, the query will fail.
+    const { rows } = await this.pool.query(query, [
+      enrollmentId,
+      status,
+      adminId,
+    ]);
+    return rows[0];
+  }
 }

@@ -281,7 +281,7 @@ export class CourseRepository {
   }
 
   // Ensure this matches your Repository exactly
-async updateCourseFee(courseId: number, amount: number) {
+  async updateCourseFee(courseId: number, amount: number) {
     const query = `
         INSERT INTO course_fees (course_id, base_amount, updated_at)
         VALUES ($1, $2, CURRENT_TIMESTAMP)
@@ -293,17 +293,17 @@ async updateCourseFee(courseId: number, amount: number) {
     `;
     // Use try-catch to see the exact DB error in logs
     try {
-        const { rows } = await this.pool.query(query, [courseId, amount]); 
-        return rows[0];
+      const { rows } = await this.pool.query(query, [courseId, amount]);
+      return rows[0];
     } catch (error: any) {
-        console.error("DETAILED DATABASE ERROR:", error.message); // This will tell you EXACTLY why it failed
-        throw error;
+      console.error("DETAILED DATABASE ERROR:", error.message); // This will tell you EXACTLY why it failed
+      throw error;
     }
-}
+  }
 
-async getCoursesWithFees() {
-  // JOIN allows us to see the base_amount from our new course_fees table
-  const query = `
+  async getCoursesWithFees() {
+    // JOIN allows us to see the base_amount from our new course_fees table
+    const query = `
     SELECT 
       c.id, 
       c.name, 
@@ -314,12 +314,15 @@ async getCoursesWithFees() {
     WHERE c.deleted_at IS NULL
     ORDER BY c.name ASC;
   `;
-  try {
-    const { rows } = await this.pool.query(query); // [cite: 40]
-    return rows;
-  } catch (error: any) {
-    console.error("Database Error fetching courses with fees:", error.message);  
-    throw new Error("Failed to retrieve courses and fee data");
+    try {
+      const { rows } = await this.pool.query(query); // [cite: 40]
+      return rows;
+    } catch (error: any) {
+      console.error(
+        "Database Error fetching courses with fees:",
+        error.message,
+      );
+      throw new Error("Failed to retrieve courses and fee data");
+    }
   }
-}
 }

@@ -7,7 +7,12 @@ export class AttendanceRepository {
   constructor(@inject(TYPES.DbPool) private readonly pool: Pool) {}
 
   // TEACHER: Create a session and bulk mark records
-  async markAttendance(teacherId: string, scheduleId: number, topic: string, records: Record<string, string>) {
+  async markAttendance(
+    teacherId: string,
+    scheduleId: number,
+    topic: string,
+    records: Record<string, string>,
+  ) {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -16,7 +21,7 @@ export class AttendanceRepository {
       const sessionRes = await client.query(
         `INSERT INTO attendance_sessions (schedule_id, teacher_id, topic_covered, session_date) 
          VALUES ($1, $2, $3, CURRENT_DATE) RETURNING id`,
-        [scheduleId, teacherId, topic]
+        [scheduleId, teacherId, topic],
       );
       const sessionId = sessionRes.rows[0].id;
 
@@ -25,7 +30,7 @@ export class AttendanceRepository {
       for (const studentId of studentIds) {
         await client.query(
           `INSERT INTO attendance_records (session_id, student_id, status) VALUES ($1, $2, $3)`,
-          [sessionId, studentId, records[studentId]]
+          [sessionId, studentId, records[studentId]],
         );
       }
 
@@ -40,9 +45,9 @@ export class AttendanceRepository {
   }
 
   // ADMIN: Global logs with joins
- // Inside attendance.repository.ts
-async getGlobalReport() {
-  const query = `
+  // Inside attendance.repository.ts
+  async getGlobalReport() {
+    const query = `
     SELECT 
       r.id, 
       u.email as student_name, -- Changed from u.name to u.email
@@ -57,9 +62,9 @@ async getGlobalReport() {
     JOIN users t ON s.teacher_id = t.id
     ORDER BY r.marked_at DESC LIMIT 100
   `;
-  const res = await this.pool.query(query);
-  return res.rows;
-}
+    const res = await this.pool.query(query);
+    return res.rows;
+  }
   // STUDENT: Personal history
   async getStudentRecords(studentId: string) {
     const query = `

@@ -47,60 +47,64 @@ export class ScheduleRepository {
   }
 
   // src/repositories/schedule.repository.ts
-// src/repositories/schedule.repository.ts
-// async getSchedulesByWeek(teacherId: string, startDate: string, endDate: string) {
-//   const query = `
-//     SELECT 
-//       cs.*, 
-//       c.name as course_name,
-//       asess.id as session_id,
-//       asess.session_date,
-//       asess.is_cancelled
-//     FROM course_schedules cs
-//     JOIN courses c ON cs.course_id = c.id
-//     -- Join with sessions to see if a specific instance exists for this week
-//     LEFT JOIN attendance_sessions asess ON 
-//       asess.schedule_id = cs.id AND 
-//       asess.session_date BETWEEN $2 AND $3
-//     WHERE c.teacher_id = $1
-//     ORDER BY 
-//       CASE cs.day_of_week 
-//         WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 
-//         WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 
-//       END, cs.start_time ASC;
-//   `;
-//   const { rows } = await this.pool.query(query, [teacherId, startDate, endDate]);
-//   return rows;
-// }
+  // src/repositories/schedule.repository.ts
+  // async getSchedulesByWeek(teacherId: string, startDate: string, endDate: string) {
+  //   const query = `
+  //     SELECT
+  //       cs.*,
+  //       c.name as course_name,
+  //       asess.id as session_id,
+  //       asess.session_date,
+  //       asess.is_cancelled
+  //     FROM course_schedules cs
+  //     JOIN courses c ON cs.course_id = c.id
+  //     -- Join with sessions to see if a specific instance exists for this week
+  //     LEFT JOIN attendance_sessions asess ON
+  //       asess.schedule_id = cs.id AND
+  //       asess.session_date BETWEEN $2 AND $3
+  //     WHERE c.teacher_id = $1
+  //     ORDER BY
+  //       CASE cs.day_of_week
+  //         WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3
+  //         WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6
+  //       END, cs.start_time ASC;
+  //   `;
+  //   const { rows } = await this.pool.query(query, [teacherId, startDate, endDate]);
+  //   return rows;
+  // }
 
-// src/repositories/schedule.repository.ts
-async addSchedule(data: { 
-  course_id: number, 
-  day_of_week: string, 
-  start_time: string, 
-  end_time: string, 
-  room_number: string,
-  class_code: string 
-}) {
-  const query = `
+  // src/repositories/schedule.repository.ts
+  async addSchedule(data: {
+    course_id: number;
+    day_of_week: string;
+    start_time: string;
+    end_time: string;
+    room_number: string;
+    class_code: string;
+  }) {
+    const query = `
     INSERT INTO course_schedules 
     (course_id, day_of_week, start_time, end_time, room_number, class_code)
     VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *;
   `;
-  const values = [
-    data.course_id, 
-    data.day_of_week, 
-    data.start_time, 
-    data.end_time, 
-    data.room_number, 
-    data.class_code
-  ];
-  const { rows } = await this.pool.query(query, values);
-  return rows[0];
-}
+    const values = [
+      data.course_id,
+      data.day_of_week,
+      data.start_time,
+      data.end_time,
+      data.room_number,
+      data.class_code,
+    ];
+    const { rows } = await this.pool.query(query, values);
+    return rows[0];
+  }
 
-async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string) {
+  async getSchedulesByWeek(
+    startDate: string,
+    endDate: string,
+    teacherId?: string,
+  ) {
     let query = `
       SELECT 
         cs.*, 
@@ -136,7 +140,6 @@ async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string)
     return rows;
   }
 
-
   // Fetch all schedules for the week regardless of teacher
   async getAllSchedulesByWeek(startDate: string, endDate: string) {
     const query = `
@@ -163,7 +166,6 @@ async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string)
     const { rows } = await this.pool.query(query, [startDate, endDate]);
     return rows;
   }
- 
 
   // 1. Get All Daily Schedules (Global Admin View)
   async getAllDailySchedules(date: string, dayName: string) {
@@ -193,11 +195,14 @@ async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string)
       WHERE id = $1;
     `;
     return await this.pool.query(query, [id]);
-  
-}
-// Fetch all schedules for the week (Universal Registry)
- // Update teacherId to be optional with '?'
-  async getGlobalWeeklySchedules(startDate: string, endDate: string, teacherId?: string) {
+  }
+  // Fetch all schedules for the week (Universal Registry)
+  // Update teacherId to be optional with '?'
+  async getGlobalWeeklySchedules(
+    startDate: string,
+    endDate: string,
+    teacherId?: string,
+  ) {
     let query = `
       SELECT 
         cs.*, 
@@ -234,7 +239,11 @@ async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string)
   }
 
   // Teacher-only: Initialize a specific attendance session for a slot
-  async initializeAttendanceSession(scheduleId: number, date: string, teacherId: string) {
+  async initializeAttendanceSession(
+    scheduleId: number,
+    date: string,
+    teacherId: string,
+  ) {
     const query = `
       INSERT INTO attendance_sessions (schedule_id, session_date)
       SELECT $1, $2
@@ -245,7 +254,11 @@ async getSchedulesByWeek(startDate: string, endDate: string, teacherId?: string)
       )
       RETURNING id;
     `;
-    const { rows } = await this.pool.query(query, [scheduleId, date, teacherId]);
+    const { rows } = await this.pool.query(query, [
+      scheduleId,
+      date,
+      teacherId,
+    ]);
     return rows[0];
   }
 }
