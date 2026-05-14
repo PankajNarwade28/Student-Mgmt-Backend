@@ -56,7 +56,7 @@ export class UserRepository {
 
       return { users: rows, totalCount };
     } catch (err) {
-      console.error(err)
+      console.error(err);
       throw err;
     }
   }
@@ -84,6 +84,4 @@ export class UserRepository {
     const query = "UPDATE users SET is_active = $2 WHERE id = $1";
     await this.pool.query(query, [userId, isActive]);
   }
-
-  
 }
